@@ -20,6 +20,12 @@ class FinanceEntry extends Model
 
     public const TYPE_GATEWAY_FEE = 'gateway_fee';
 
+    public const TYPE_TRUCO_ENTRY = 'truco_entry';
+
+    public const TYPE_TRUCO_PAYOUT = 'truco_payout';
+
+    public const TYPE_TRUCO_HOUSE_RESULT = 'truco_house_result';
+
     public const DIR_IN = 'in';
 
     public const DIR_OUT = 'out';

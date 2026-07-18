@@ -9,13 +9,16 @@ class LobbyController extends Controller
 {
     public function __invoke(): View
     {
-        $game = Game::query()
-            ->where('slug', 'tigre-aviator')
+        $games = Game::query()
+            ->whereIn('slug', ['tigre-aviator', 'tigre-truco'])
             ->ordered()
-            ->firstOrFail();
+            ->get();
+
+        $featured = $games->firstWhere('slug', 'tigre-aviator') ?? $games->first();
 
         return view('lobby.index', [
-            'game' => $game,
+            'game' => $featured,
+            'games' => $games,
         ]);
     }
 }

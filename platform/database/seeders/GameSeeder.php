@@ -22,6 +22,17 @@ class GameSeeder extends Seeder
                 'sort_order' => 1,
             ],
             [
+                'slug' => 'tigre-truco',
+                'name' => 'Tigre do Truco',
+                'short_description' => 'Truco 1x1 ou 2x2 — apostas rápidas até 12 pontos.',
+                'category' => 'cards',
+                'thumbnail' => 'images/games/tigre-truco.png',
+                'launch_url' => null,
+                'status' => Game::STATUS_ACTIVE,
+                'is_featured' => true,
+                'sort_order' => 2,
+            ],
+            [
                 'slug' => 'fortune-tiger',
                 'name' => 'Fortune Tiger',
                 'short_description' => 'Slots clássico do tigre da sorte.',
@@ -30,7 +41,7 @@ class GameSeeder extends Seeder
                 'launch_url' => null,
                 'status' => Game::STATUS_COMING_SOON,
                 'is_featured' => true,
-                'sort_order' => 2,
+                'sort_order' => 3,
             ],
             [
                 'slug' => 'crash-royale',
@@ -41,7 +52,7 @@ class GameSeeder extends Seeder
                 'launch_url' => null,
                 'status' => Game::STATUS_COMING_SOON,
                 'is_featured' => false,
-                'sort_order' => 3,
+                'sort_order' => 4,
             ],
             [
                 'slug' => 'roleta-vip',
@@ -52,7 +63,7 @@ class GameSeeder extends Seeder
                 'launch_url' => null,
                 'status' => Game::STATUS_COMING_SOON,
                 'is_featured' => false,
-                'sort_order' => 4,
+                'sort_order' => 5,
             ],
         ];
 

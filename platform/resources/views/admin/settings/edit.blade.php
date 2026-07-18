@@ -21,12 +21,26 @@
         </div>
         <div class="card-body">
           <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">House edge (0–0.5)</label>
-              <input type="number" step="0.001" name="house_edge" value="{{ old('house_edge', $settings['house_edge']) }}" class="form-control" required>
+            <div class="col-12">
+              <h6 class="text-body-emphasis mb-2">House edge por jogo</h6>
+              <p class="small text-body-tertiary mb-3">Aviator usa fração no crash (ex. 0.08 = 8%). Truco usa a mesma escala: 0.05 = 5% de vantagem da casa na partida.</p>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Max multiplier</label>
+              <label class="form-label">Aviator — house edge (0–0.5)</label>
+              <input type="number" step="0.001" name="house_edge" value="{{ old('house_edge', $settings['house_edge']) }}" class="form-control" required>
+              <div class="form-text">Atual: {{ number_format((float) ($settings['house_edge'] ?? 0.08) * 100, 1, ',', '.') }}%</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Truco — house edge (0–0.5)</label>
+              <input type="number" step="0.001" name="truco_house_edge" value="{{ old('truco_house_edge', $settings['truco_house_edge'] ?? '0.05') }}" class="form-control" required>
+              <div class="form-text">Atual: {{ number_format((float) ($settings['truco_house_edge'] ?? 0.05) * 100, 1, ',', '.') }}%</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Truco — timeout por jogada (s)</label>
+              <input type="number" min="5" max="120" name="truco_turn_timeout_seconds" value="{{ old('truco_turn_timeout_seconds', $settings['truco_turn_timeout_seconds'] ?? '20') }}" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Max multiplier (Aviator)</label>
               <input type="number" step="0.1" name="max_multiplier" value="{{ old('max_multiplier', $settings['max_multiplier']) }}" class="form-control" required>
             </div>
             <div class="col-md-6">

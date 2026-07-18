@@ -12,6 +12,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LobbyController;
 use App\Http\Controllers\MercadoPagoWebhookController;
 use App\Http\Controllers\WithdrawalController;
+use App\Http\Controllers\TrucoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -51,6 +52,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/state', [CrashController::class, 'state'])->name('crash.state');
         Route::post('/bet', [CrashController::class, 'bet'])->name('crash.bet');
         Route::post('/cashout', [CrashController::class, 'cashout'])->name('crash.cashout');
+    });
+
+    Route::prefix('api/truco')->group(function () {
+        Route::post('/start', [TrucoController::class, 'start'])->name('truco.start');
+        Route::post('/join', [TrucoController::class, 'join'])->name('truco.join');
+        Route::get('/{match}', [TrucoController::class, 'state'])->name('truco.state');
+        Route::post('/{match}/act', [TrucoController::class, 'act'])->name('truco.act');
+        Route::post('/{match}/start-room', [TrucoController::class, 'startRoom'])->name('truco.start-room');
+        Route::post('/{match}/leave', [TrucoController::class, 'leave'])->name('truco.leave');
     });
 });
 

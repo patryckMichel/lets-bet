@@ -15,6 +15,8 @@ class SettingAdminController extends Controller
 {
     private array $houseKeys = [
         'house_edge',
+        'truco_house_edge',
+        'truco_turn_timeout_seconds',
         'max_multiplier',
         'deposit_min',
         'deposit_max',
@@ -87,6 +89,8 @@ class SettingAdminController extends Controller
     {
         $data = $request->validate([
             'house_edge' => ['required', 'numeric', 'min:0', 'max:0.5'],
+            'truco_house_edge' => ['required', 'numeric', 'min:0', 'max:0.5'],
+            'truco_turn_timeout_seconds' => ['required', 'integer', 'min:5', 'max:120'],
             'max_multiplier' => ['required', 'numeric', 'min:2', 'max:1000'],
             'deposit_min' => ['required', 'numeric', 'min:1'],
             'deposit_max' => ['required', 'numeric', 'gte:deposit_min'],

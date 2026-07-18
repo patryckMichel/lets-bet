@@ -50,6 +50,14 @@
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link {{ request()->routeIs('admin.truco.*') ? 'active' : '' }}" href="{{ route('admin.truco.index') }}">
+                <div class="d-flex align-items-center">
+                  <span class="nav-link-icon"><span data-feather="layers"></span></span>
+                  <span class="nav-link-text">Truco</span>
+                </div>
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link {{ request()->routeIs('admin.players.*') ? 'active' : '' }}" href="{{ route('admin.players.index') }}">
                 <div class="d-flex align-items-center">
                   <span class="nav-link-icon"><span data-feather="users"></span></span>

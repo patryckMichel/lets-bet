@@ -25,6 +25,7 @@
     </form>
   </header>
 
+  @if ($game)
   <a
     class="lobby__hero {{ $game->isPlayable() ? '' : 'is-locked' }}"
     href="{{ $game->isPlayable() ? route('games.show', $game->slug) : '#' }}"
@@ -42,7 +43,7 @@
         height="120"
       >
       <div class="lobby__hero-copy">
-        <p class="lobby__kicker">Jogo principal</p>
+        <p class="lobby__kicker">Destaque</p>
         <h1>{{ $game->name }}</h1>
         <p>{{ $game->short_description }}</p>
         @if ($game->isPlayable())
@@ -53,6 +54,25 @@
       </div>
     </div>
   </a>
+  @endif
+
+  <div class="lobby__games">
+    <h2 class="lobby__games-title">Jogos</h2>
+    <div class="lobby__games-grid">
+      @foreach ($games as $g)
+        <a
+          class="lobby__game-card {{ $g->isPlayable() ? '' : 'is-locked' }}"
+          href="{{ $g->isPlayable() ? route('games.show', $g->slug) : '#' }}"
+        >
+          <img src="{{ asset($g->thumbnail ?: 'images/games/tigre-aviator-logo.png') }}" alt="{{ $g->name }}">
+          <div>
+            <strong>{{ $g->name }}</strong>
+            <span>{{ $g->isPlayable() ? 'Jogar' : $g->statusLabel() }}</span>
+          </div>
+        </a>
+      @endforeach
+    </div>
+  </div>
 
   <div class="lobby__social">
     <p>Bônus surpresa nas redes</p>
@@ -66,4 +86,39 @@
 
 @push('head')
   <link rel="stylesheet" href="{{ asset('css/lobby.css') }}">
+  <style>
+    .lobby__games { margin-top: .5rem; }
+    .lobby__games-title {
+      margin: 0 0 .55rem;
+      font-size: .95rem;
+      color: rgba(255,231,163,.9);
+      font-family: "Bricolage Grotesque", Georgia, serif;
+    }
+    .lobby__games-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .55rem;
+    }
+    .lobby__game-card {
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+      text-decoration: none;
+      color: #fff;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(246,200,76,.22);
+      border-radius: 16px;
+      padding: .65rem;
+    }
+    .lobby__game-card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #140810;
+    }
+    .lobby__game-card strong { display: block; font-size: .92rem; }
+    .lobby__game-card span { font-size: .75rem; color: #f6c84c; }
+    .lobby__game-card.is-locked { opacity: .55; pointer-events: none; }
+  </style>
 @endpush

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\LogAdminController;
 use App\Http\Controllers\Admin\PlayerAdminController;
 use App\Http\Controllers\Admin\SettingAdminController;
 use App\Http\Controllers\Admin\SystemUpdateAdminController;
+use App\Http\Controllers\Admin\TrucoAdminController;
 use App\Http\Controllers\Admin\WithdrawalAdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +19,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/jogos', [GameAdminController::class, 'index'])->name('games.index');
     Route::patch('/jogos/{game}/status', [GameAdminController::class, 'updateStatus'])->name('games.status');
+    Route::get('/truco', [TrucoAdminController::class, 'index'])->name('truco.index');
 
     Route::get('/jogadores', [PlayerAdminController::class, 'index'])->name('players.index');
     Route::get('/jogadores/exportar', [PlayerAdminController::class, 'export'])->name('players.export');

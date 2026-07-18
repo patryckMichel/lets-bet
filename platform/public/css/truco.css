@@ -1,0 +1,506 @@
+.page-truco {
+  --felt-dark: #0d3d2e;
+  --felt: #145c40;
+  --felt-light: #1a704d;
+  --gold: #f6c84c;
+  --truco-orange: #e67a2e;
+  --truco-blue: #2b6cb0;
+  --truco-green: #2f9e44;
+  background: radial-gradient(ellipse at 50% 30%, #1a704d 0%, #0d3d2e 55%, #06261c 100%);
+  min-height: 100vh;
+  color: #f3f7f4;
+}
+
+.truco-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(246, 200, 76, 0.2);
+}
+
+.truco-back,
+.truco-link,
+.truco-menu-btn {
+  color: var(--gold);
+  text-decoration: none;
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.truco-hub {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2rem;
+  text-align: center;
+}
+
+.truco-hub__art {
+  width: min(100%, 280px);
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.truco-hub h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--gold);
+}
+
+.truco-hub p { opacity: 0.9; }
+
+.truco-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.truco-mode {
+  border: 1px solid rgba(246, 200, 76, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.85rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.truco-mode.is-active {
+  border-color: var(--gold);
+  background: rgba(246, 200, 76, 0.18);
+  color: var(--gold);
+}
+
+.truco-2v2-extra {
+  text-align: left;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.truco-join-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.truco-input {
+  flex: 1;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #0a2a1f;
+  color: #fff;
+  padding: 0.65rem 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.truco-or {
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin: 0.75rem 0 0;
+}
+
+.truco-label {
+  text-align: left;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin: 0.5rem 0;
+}
+
+.truco-stakes {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.truco-stake {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.55rem 0.2rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.truco-stake.is-active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(246, 200, 76, 0.15);
+}
+
+.truco-cta {
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(180deg, #ffd76a, var(--gold));
+  color: #1a1408;
+  font-weight: 800;
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.truco-cta:disabled { opacity: 0.45; cursor: not-allowed; }
+.truco-cta--sm { width: auto; padding: 0.65rem 1rem; border-radius: 8px; }
+.truco-cta--ghost {
+  margin-top: 0.5rem;
+  background: transparent;
+  border: 1px solid rgba(246, 200, 76, 0.4);
+  color: var(--gold);
+}
+
+.truco-error { color: #ff8f8f; }
+.truco-code {
+  font-size: 1.5rem;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+}
+.truco-hint { font-size: 0.9rem; opacity: 0.8; }
+.truco-room-seats {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+}
+.truco-room-seats li {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.35rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+}
+.truco-msg { min-height: 1.2em; color: var(--gold); }
+
+/* —— Mesa —— */
+.truco-table {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 0.5rem 0.5rem 1rem;
+  position: relative;
+}
+
+.truco-score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.truco-score__side {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.truco-score__side--right { justify-content: flex-end; }
+
+.truco-score strong {
+  font-size: 1.35rem;
+  color: var(--gold);
+  min-width: 1.4rem;
+}
+
+.truco-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.truco-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.truco-dots span.is-on {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.truco-hand-val {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  text-align: center;
+}
+
+.truco-felt {
+  position: relative;
+  min-height: 420px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.06), transparent 55%),
+    linear-gradient(160deg, var(--felt-light), var(--felt) 40%, var(--felt-dark));
+  border: 3px solid rgba(246, 200, 76, 0.25);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.truco-seat {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.truco-seat--top { top: 0.5rem; left: 50%; transform: translateX(-50%); }
+.truco-seat--left { left: 0.35rem; top: 38%; }
+.truco-seat--right { right: 0.35rem; top: 38%; }
+.truco-seat--me { bottom: 0.35rem; left: 50%; transform: translateX(-50%); width: 92%; }
+
+.truco-seat.is-hidden { display: none; }
+
+.truco-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  display: grid;
+  place-items: center;
+  position: relative;
+  font-size: 0.65rem;
+  text-align: center;
+  padding: 2px;
+}
+
+.truco-avatar.is-turn {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(246, 200, 76, 0.35);
+}
+
+.truco-avatar.is-me { border-color: #3ecf7a; }
+.truco-avatar__name {
+  overflow: hidden;
+  max-width: 44px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.truco-react {
+  position: absolute;
+  top: -18px;
+  right: -8px;
+  font-size: 1.2rem;
+  animation: reactPop 1.6s ease;
+}
+
+.truco-backs {
+  display: flex;
+  gap: 2px;
+}
+
+.truco-back {
+  width: 28px;
+  height: 40px;
+  border-radius: 4px;
+  background: linear-gradient(145deg, #c62828, #8b0000);
+  border: 1px solid #fff3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.truco-center {
+  position: absolute;
+  inset: 22% 12% 28%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.truco-vira-box,
+.truco-manilhas-box {
+  font-size: 0.7rem;
+  text-align: center;
+  opacity: 0.95;
+}
+
+.truco-manilhas__row,
+.truco-played,
+.truco-hand {
+  display: flex;
+  gap: 0.35rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.truco-card {
+  width: 52px;
+  height: 74px;
+  border-radius: 6px;
+  background: #f7f2e8;
+  color: #1a1a1a;
+  border: 1px solid #d0c8b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28);
+  transition: transform 0.35s ease, box-shadow 0.2s;
+  cursor: default;
+  user-select: none;
+}
+
+.truco-card.red { color: #c62828; }
+.truco-card.is-clickable { cursor: pointer; }
+.truco-card.is-clickable:hover,
+.truco-card.is-selected {
+  transform: translateY(-10px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  outline: 2px solid var(--gold);
+}
+
+.truco-card.is-fly-in {
+  animation: cardDeal 0.4s ease;
+}
+
+.truco-card.is-play-anim {
+  animation: cardPlay 0.35s ease;
+}
+
+.truco-card.sm {
+  width: 36px;
+  height: 52px;
+  font-size: 0.75rem;
+}
+
+.truco-toast {
+  min-height: 1.2em;
+  margin: 0;
+  font-weight: 700;
+  color: var(--gold);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  animation: toastPulse 0.5s ease;
+}
+
+.truco-bottom-bar {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem;
+  align-items: end;
+  margin-top: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.truco-emojis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem;
+}
+
+.truco-emojis button {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.truco-ask {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  opacity: 0.85;
+  text-align: right;
+}
+
+.truco-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+.truco-btn {
+  border: none;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 0.55rem 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  color: #fff;
+}
+
+.truco-btn--run { background: var(--truco-blue); }
+.truco-btn--ok { background: var(--truco-green); }
+.truco-btn--raise {
+  background: var(--truco-orange);
+  animation: raisePulse 1.2s ease infinite;
+}
+.truco-btn:disabled { opacity: 0.4; cursor: not-allowed; animation: none; }
+
+.truco-result {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: grid;
+  place-items: center;
+  z-index: 40;
+  padding: 1rem;
+}
+
+.truco-result__box {
+  background: linear-gradient(160deg, #145c40, #0d3d2e);
+  border: 1px solid rgba(246, 200, 76, 0.4);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+}
+
+.truco-result__box h2 { color: var(--gold); margin-top: 0; }
+.truco-result__box .truco-cta { margin: 1rem 0 0.75rem; }
+.truco-result__box .truco-link { display: inline-block; }
+
+.mode-1v1 .truco-seat--left,
+.mode-1v1 .truco-seat--right {
+  display: none;
+}
+
+@keyframes cardDeal {
+  from { transform: translateY(-40px) scale(0.6); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes cardPlay {
+  from { transform: scale(1.15) rotate(-6deg); }
+  to { transform: none; }
+}
+
+@keyframes raisePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 122, 46, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(230, 122, 46, 0); }
+}
+
+@keyframes toastPulse {
+  from { transform: scale(1.15); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes reactPop {
+  0% { transform: scale(0.4); opacity: 0; }
+  20% { transform: scale(1.2); opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+@media (max-width: 420px) {
+  .truco-stakes { grid-template-columns: repeat(4, 1fr); }
+  .truco-card { width: 46px; height: 66px; }
+  .truco-felt { min-height: 400px; }
+}
