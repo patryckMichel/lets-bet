@@ -34,7 +34,18 @@
               <strong>v{{ $status['remote'] }}</strong>
             @else
               <span class="text-warning">Não foi possível ler o GitHub</span>
+              @if (! empty($status['remote_error']))
+                <div class="small text-body-tertiary mt-1">{{ $status['remote_error'] }}</div>
+              @endif
             @endif
+          </dd>
+
+          <dt class="col-sm-5">Arquivo remoto</dt>
+          <dd class="col-sm-7">
+            <code class="small">{{ $status['version_path'] ?? 'platform/VERSION' }}</code>
+            <div class="small text-body-tertiary mt-1">
+              <a href="{{ $status['remote_url'] ?? '#' }}" target="_blank" rel="noopener">abrir no GitHub</a>
+            </div>
           </dd>
 
           <dt class="col-sm-5">Commit local</dt>

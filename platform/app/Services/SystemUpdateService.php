@@ -8,55 +8,83 @@ use RuntimeException;
 
 class SystemUpdateService
 {
+    protected ?string $lastRemoteError = null;
+
     public function localVersion(): string
     {
-        $path = base_path('VERSION');
-        if (! is_readable($path)) {
-            return '0.0.0';
+        $candidates = [
+            base_path('VERSION'),
+            base_path('platform/VERSION'),
+        ];
+
+        foreach ($candidates as $path) {
+            if (is_readable($path)) {
+                return $this->normalizeVersion((string) file_get_contents($path));
+            }
         }
 
-        return $this->normalizeVersion((string) file_get_contents($path));
+        return '0.0.0';
     }
 
     public function remoteVersion(): ?string
     {
+        $this->lastRemoteError = null;
+
         $repo = (string) config('services.github.repo', 'patryckMichel/lets-bet');
         $branch = (string) config('services.github.branch', 'main');
         $token = config('services.github.token');
-        $versionPath = (string) config('services.github.version_path', 'platform/VERSION');
+        $versionPath = ltrim((string) config('services.github.version_path', 'platform/VERSION'), '/');
 
-        // Público: raw.githubusercontent.com
-        $rawUrl = "https://raw.githubusercontent.com/{$repo}/{$branch}/{$versionPath}";
+        $urls = [
+            "https://raw.githubusercontent.com/{$repo}/{$branch}/{$versionPath}",
+            "https://cdn.jsdelivr.net/gh/{$repo}@{$branch}/{$versionPath}",
+        ];
 
+        $errors = [];
+
+        foreach ($urls as $url) {
+            $parsed = $this->fetchVersionText($url, filled($token) ? (string) $token : null);
+            if ($parsed !== null) {
+                return $parsed;
+            }
+            $errors[] = $this->lastRemoteError ?: ('falha: '.$url);
+        }
+
+        // GitHub Contents API (público funciona sem token; privado precisa)
+        $apiUrl = "https://api.github.com/repos/{$repo}/contents/{$versionPath}";
         try {
-            $request = Http::timeout(12)->accept('text/plain');
+            $request = Http::timeout(15)
+                ->withHeaders($this->githubHeaders())
+                ->accept('application/vnd.github.raw');
+
             if (filled($token)) {
                 $request = $request->withToken((string) $token);
             }
 
-            $response = $request->get($rawUrl);
-            if ($response->successful()) {
-                return $this->normalizeVersion($response->body());
-            }
+            $api = $request->get($apiUrl, ['ref' => $branch]);
+            if ($api->successful()) {
+                $version = $this->normalizeVersion($api->body());
+                if ($version !== '0.0.0') {
+                    $this->lastRemoteError = null;
 
-            // Fallback API (repo privado)
-            if (filled($token)) {
-                $api = Http::timeout(12)
-                    ->withToken((string) $token)
-                    ->accept('application/vnd.github.raw')
-                    ->get("https://api.github.com/repos/{$repo}/contents/{$versionPath}", [
-                        'ref' => $branch,
-                    ]);
-
-                if ($api->successful()) {
-                    return $this->normalizeVersion($api->body());
+                    return $version;
                 }
+                $errors[] = 'API GitHub retornou conteúdo inválido';
+            } else {
+                $errors[] = 'API GitHub HTTP '.$api->status();
             }
-        } catch (\Throwable) {
-            return null;
+        } catch (\Throwable $e) {
+            $errors[] = 'API GitHub: '.$e->getMessage();
         }
 
+        $this->lastRemoteError = implode(' | ', array_slice($errors, 0, 3));
+
         return null;
+    }
+
+    public function lastRemoteError(): ?string
+    {
+        return $this->lastRemoteError;
     }
 
     public function isUpdateAvailable(): bool
@@ -97,12 +125,26 @@ class SystemUpdateService
     }
 
     /**
-     * @return array{ok: bool, log: string, local: string, remote: ?string}
+     * @return array{
+     *   local: string,
+     *   remote: ?string,
+     *   update_available: bool,
+     *   commit: ?string,
+     *   script_ok: bool,
+     *   repo: string,
+     *   branch: string,
+     *   version_path: string,
+     *   remote_error: ?string,
+     *   remote_url: string
+     * }
      */
     public function status(): array
     {
         $local = $this->localVersion();
         $remote = $this->remoteVersion();
+        $repo = (string) config('services.github.repo', 'patryckMichel/lets-bet');
+        $branch = (string) config('services.github.branch', 'main');
+        $versionPath = ltrim((string) config('services.github.version_path', 'platform/VERSION'), '/');
 
         return [
             'local' => $local,
@@ -110,8 +152,11 @@ class SystemUpdateService
             'update_available' => $remote !== null && version_compare($remote, $local, '>'),
             'commit' => $this->localGitCommit(),
             'script_ok' => $this->scriptConfigured(),
-            'repo' => (string) config('services.github.repo', 'patryckMichel/lets-bet'),
-            'branch' => (string) config('services.github.branch', 'main'),
+            'repo' => $repo,
+            'branch' => $branch,
+            'version_path' => $versionPath,
+            'remote_error' => $this->lastRemoteError,
+            'remote_url' => "https://raw.githubusercontent.com/{$repo}/{$branch}/{$versionPath}",
         ];
     }
 
@@ -142,9 +187,55 @@ class SystemUpdateService
         ];
     }
 
+    protected function fetchVersionText(string $url, ?string $token): ?string
+    {
+        try {
+            $request = Http::timeout(15)
+                ->withHeaders($this->githubHeaders())
+                ->accept('text/plain');
+
+            if ($token !== null && $token !== '') {
+                $request = $request->withToken($token);
+            }
+
+            $response = $request->get($url);
+            if (! $response->successful()) {
+                $this->lastRemoteError = 'HTTP '.$response->status().' em '.$url;
+
+                return null;
+            }
+
+            $version = $this->normalizeVersion($response->body());
+            if ($version === '0.0.0') {
+                $this->lastRemoteError = 'Conteúdo inválido em '.$url;
+
+                return null;
+            }
+
+            $this->lastRemoteError = null;
+
+            return $version;
+        } catch (\Throwable $e) {
+            $this->lastRemoteError = $e->getMessage().' ('.$url.')';
+
+            return null;
+        }
+    }
+
+    /** @return array<string, string> */
+    protected function githubHeaders(): array
+    {
+        return [
+            'User-Agent' => 'LESTBET-SystemUpdate/1.0',
+            'Accept' => 'text/plain',
+        ];
+    }
+
     protected function normalizeVersion(string $raw): string
     {
-        $v = trim(preg_replace('/\s+/', '', $raw) ?? '');
+        // Remove BOM e espaços/quebras
+        $v = preg_replace('/^\xEF\xBB\xBF/', '', $raw) ?? $raw;
+        $v = trim(preg_replace('/\s+/', '', $v) ?? '');
         $v = ltrim($v, 'vV');
 
         if ($v === '' || ! preg_match('/^\d+(\.\d+){0,3}$/', $v)) {
