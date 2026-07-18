@@ -37,6 +37,8 @@
   let lastScoreThem = null;
   let lastTricksKey = '';
   let lastTableLen = 0;
+  let lastTrickWinner = null;
+  let matchIntroPlayed = false;
   let animBusy = false;
 
   const suitSymbol = { clubs: '♣', hearts: '♥', spades: '♠', diamonds: '♦' };
@@ -133,10 +135,14 @@
     felt.classList.remove(`is-flash-${kind}`);
   }
 
-  async function playDealSequence(data) {
+  async function playDealSequence(data, opts = {}) {
     if (animBusy) return;
     animBusy = true;
+    const isStart = !!opts.isStart;
     try {
+      if (isStart) {
+        await showFx('Vamos jogar!', 'accept');
+      }
       if (deck) {
         deck.classList.add('is-visible', 'is-shuffle');
         await sleep(600);
@@ -174,6 +180,16 @@
     } finally {
       animBusy = false;
     }
+  }
+
+  async function playTrickWinFx(winner) {
+    const played = document.getElementById('table-cards');
+    if (played) {
+      played.classList.add('is-trick-win');
+      setTimeout(() => played.classList.remove('is-trick-win'), 700);
+    }
+    const label = winner === 'us' ? 'Nós!' : 'Eles!';
+    await showFx(label, winner === 'us' ? 'accept' : 'run');
   }
 
   async function playRaiseFx(value) {
@@ -293,6 +309,8 @@
     lastScoreThem = null;
     lastTricksKey = '';
     lastTableLen = 0;
+    lastTrickWinner = null;
+    matchIntroPlayed = false;
   }
 
   function showRoomLobby(data) {
@@ -305,12 +323,12 @@
     document.getElementById('room-code').textContent = data.code || '—';
     const list = document.getElementById('room-seats');
     list.innerHTML = (data.seats || []).map((s) => {
-      const label = s.is_ghost ? `${s.name}` : (s.filled ? s.name : 'Aguardando…');
+      const label = s.filled ? (s.name || 'Jogador') : 'Aguardando…';
       return `<li>Assento ${s.seat_index + 1} · Time ${String(s.team).toUpperCase()} — ${label}</li>`;
     }).join('');
     document.getElementById('btn-start-room').hidden = !data.can_start && !data.is_host;
     document.getElementById('room-msg').textContent = data.message
-      || (data.can_start ? 'Sala pronta. Inicie quando quiser.' : 'Aguardando parceiro (pode iniciar com fantasma).');
+      || (data.can_start ? 'Sala pronta. Inicie quando quiser.' : 'Aguardando parceiro…');
   }
 
   function seatMap(data) {
@@ -426,10 +444,10 @@
 
     const tricks = data.tricks || { us: data.tricks_us || 0, them: data.tricks_them || 0 };
     const tricksKey = `${tricks.us}-${tricks.them}`;
-    const tricksChanged = tricksKey !== lastTricksKey;
-    renderDots(document.getElementById('dots-us'), tricks.us || 0, tricksChanged);
-    renderDots(document.getElementById('dots-them'), tricks.them || 0, tricksChanged);
-    lastTricksKey = tricksKey;
+    const prevTricksKey = lastTricksKey;
+    const tricksChanged = tricksKey !== prevTricksKey;
+    renderDots(document.getElementById('dots-us'), tricks.us || 0, tricksChanged && prevTricksKey !== '');
+    renderDots(document.getElementById('dots-them'), tricks.them || 0, tricksChanged && prevTricksKey !== '');
 
     const map = seatMap(data);
     renderSeatAvatar(document.getElementById('avatar-me'), map.me, data.turn_seat);
@@ -450,15 +468,26 @@
     document.getElementById('manilhas').innerHTML = (data.manilhas || []).map((c) => cardHtml(c, { sm: true })).join('');
 
     const tableCards = data.table || [];
-    const playedAnim = tableCards.length > lastTableLen ? 'is-play-anim' : '';
+    const playedAnim = tableCards.length > lastTableLen ? 'is-from-hand is-play-anim' : '';
     document.getElementById('table-cards').innerHTML = tableCards
       .map((t, i) => cardHtml(t.card, { anim: i === tableCards.length - 1 ? playedAnim : '' }))
       .join('');
+
+    // Vaza fechou (mesa limpa + tricks mudou)
+    if (tricksChanged && prevTricksKey !== '' && tableCards.length === 0) {
+      const prevUs = Number(prevTricksKey.split('-')[0] || 0);
+      const tw = data.last_trick_winner || (tricks.us > prevUs ? 'us' : 'them');
+      playTrickWinFx(tw);
+      lastTrickWinner = tw;
+    }
+    lastTricksKey = tricksKey;
     lastTableLen = tableCards.length;
 
     const handKey = JSON.stringify(data.hand || []);
     const handEl = document.getElementById('my-hand');
     const newHand = handKey !== lastHandKey && (data.hand || []).length === 3;
+    const isMatchStart = !matchIntroPlayed && data.status === 'playing'
+      && data.score_us === 0 && data.score_them === 0;
     lastHandKey = handKey;
 
     const canPlay = data.your_turn && data.phase === 'play' && !data.pending_raise;
@@ -480,7 +509,8 @@
     });
 
     if (newHand || (viraChanged && !lastVira)) {
-      playDealSequence(data);
+      if (isMatchStart) matchIntroPlayed = true;
+      playDealSequence(data, { isStart: isMatchStart });
     }
     if (viraCode) lastVira = viraCode;
 
@@ -503,17 +533,17 @@
       stopCountdown();
       setResultOpen(true);
       const inactivity = data.forfeit_reason === 'inactivity'
+        || (data.message || '').toLowerCase().includes('não jogou a tempo')
         || (data.message || '').toLowerCase().includes('inatividade');
       const won = data.winner === 'us';
       if (inactivity) {
-        document.getElementById('result-title').textContent = 'Derrota por inatividade';
-        document.getElementById('result-body').textContent =
-          'Você não jogou a tempo (60s). O stake ficou com a casa.';
+        document.getElementById('result-title').textContent = 'Derrota';
+        document.getElementById('result-body').textContent = 'Você não jogou a tempo (60s).';
       } else {
         document.getElementById('result-title').textContent = won ? 'Vitória!' : 'Derrota';
         document.getElementById('result-body').textContent = won
-          ? `Você recebeu R$ ${Number(data.payout || data.stake * 2).toFixed(2)}`
-          : `Stake R$ ${Number(data.stake).toFixed(2)} ficou com a casa.`;
+          ? `Você ganhou R$ ${Number(data.payout || data.stake * 2).toFixed(2).replace('.', ',')}`
+          : 'Você perdeu.';
       }
     } else {
       setResultOpen(false);
@@ -605,6 +635,8 @@
       lastScoreThem = null;
       lastTricksKey = '';
       lastTableLen = 0;
+      lastTrickWinner = null;
+      matchIntroPlayed = false;
       render(data);
       if (data.status === 'playing' || data.status === 'waiting') startPoll();
     } catch (e) {

@@ -372,6 +372,7 @@ class TrucoEngine
             ],
             'tricks_us' => (int) ($state['tricks_us'] ?? 0),
             'tricks_them' => (int) ($state['tricks_them'] ?? 0),
+            'last_trick_winner' => $state['last_trick_winner'] ?? null,
             'escuro' => $escuro,
             'mao_11' => (bool) ($state['mao_11'] ?? false) || $phase === 'mao_11_decision',
             'mao_de_onze' => $phase === 'mao_11_decision' || (bool) ($state['mao_11'] ?? false),
@@ -397,7 +398,6 @@ class TrucoEngine
                 'seat_index' => $s->seat_index,
                 'team' => $s->team,
                 'name' => $s->display_name,
-                'is_ghost' => (bool) $s->is_ghost,
                 'is_you' => (int) $s->user_id === (int) $viewer->id,
                 'filled' => $s->user_id !== null || $s->is_ghost,
             ]),
@@ -491,7 +491,7 @@ class TrucoEngine
 
             // Timeout = house wins (inatividade)
             $state['forfeit_reason'] = 'inactivity';
-            $this->settleMatch($match, $state, TrucoMatch::WINNER_THEM, 'Você perdeu por inatividade.');
+            $this->settleMatch($match, $state, TrucoMatch::WINNER_THEM, 'Você não jogou a tempo (60s).');
         });
     }
 
@@ -784,9 +784,15 @@ class TrucoEngine
         $state['phase'] = 'finished';
         $state['match_winner'] = $winner;
         $state['payout'] = $payoutEach;
-        $state['message'] = $message ?? ($winner === TrucoMatch::WINNER_US
-            ? 'Vitória! +$ '.number_format($payoutEach, 2, '.', ',')
-            : 'Derrota nesta partida.');
+        if ($message !== null) {
+            $state['message'] = $message;
+        } elseif (($state['forfeit_reason'] ?? null) === 'inactivity') {
+            $state['message'] = 'Você não jogou a tempo (60s).';
+        } elseif ($winner === TrucoMatch::WINNER_US) {
+            $state['message'] = 'Você ganhou R$ '.number_format($payoutEach, 2, ',', '.');
+        } else {
+            $state['message'] = 'Você perdeu.';
+        }
 
         $match->status = TrucoMatch::STATUS_FINISHED;
         $match->settled_at = now();

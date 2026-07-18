@@ -488,11 +488,14 @@
 
 .truco-card.red { color: #c62828; }
 .truco-card.is-clickable { cursor: pointer; }
-.truco-card.is-clickable:hover,
-.truco-card.is-selected {
-  transform: translateY(-10px);
+.truco-card.is-clickable:hover {
+  transform: translateY(-8px) scale(1.04);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  outline: 2px solid var(--gold);
+}
+.truco-card.is-selected {
+  transform: translateY(-14px) scale(1.08);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.45), 0 0 0 3px var(--gold);
+  outline: none;
 }
 
 .truco-card.is-fly-in {
@@ -591,6 +594,7 @@
   display: grid !important;
   visibility: visible;
   pointer-events: auto;
+  animation: resultFadeIn 0.35s ease;
 }
 
 .truco-result__box {
@@ -601,6 +605,15 @@
   text-align: center;
   max-width: 360px;
   width: 100%;
+  animation: resultPop 0.4s ease;
+}
+
+.truco-played.is-trick-win .truco-card {
+  animation: trickWinGlow 0.7s ease;
+}
+
+.truco-played .truco-card.is-from-hand {
+  animation: cardPlayFromHand 0.4s ease;
 }
 
 .truco-result__box h2 { color: var(--gold); margin-top: 0; }
@@ -620,6 +633,26 @@
 @keyframes cardPlay {
   from { transform: scale(1.15) rotate(-6deg); opacity: 0.4; }
   to { transform: none; opacity: 1; }
+}
+
+@keyframes cardPlayFromHand {
+  0% { transform: translateY(40px) scale(1.2) rotate(-12deg); opacity: 0.3; }
+  100% { transform: none; opacity: 1; }
+}
+
+@keyframes trickWinGlow {
+  0%, 100% { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28); transform: scale(1); }
+  40% { box-shadow: 0 0 0 3px var(--gold), 0 8px 20px rgba(246, 200, 76, 0.55); transform: scale(1.08); }
+}
+
+@keyframes resultFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes resultPop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 @keyframes cardRecollect {
