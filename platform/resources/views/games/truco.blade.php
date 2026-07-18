@@ -83,12 +83,24 @@
 
     <div class="truco-felt" id="truco-felt">
       <div class="truco-felt__shine" aria-hidden="true"></div>
+      <div class="truco-felt__mark" aria-hidden="true">TRUCO</div>
       <div class="truco-fx" id="truco-fx" aria-hidden="true"></div>
       <div class="truco-deck" id="truco-deck" aria-hidden="true">
         <div class="truco-deck__card"></div>
         <div class="truco-deck__card"></div>
         <div class="truco-deck__card"></div>
       </div>
+
+      <aside class="truco-meta" aria-label="Vira e manilhas">
+        <div class="truco-vira-box">
+          <span>Vira</span>
+          <div id="vira-card"></div>
+        </div>
+        <div class="truco-manilhas-box">
+          <span>Manilhas</span>
+          <div id="manilhas" class="truco-manilhas__row"></div>
+        </div>
+      </aside>
 
       <div class="truco-seat truco-seat--top" data-seat-slot="top">
         <div class="truco-avatar" id="avatar-top"><span class="truco-avatar__name">…</span><span class="truco-react" hidden></span></div>
@@ -104,19 +116,10 @@
       </div>
 
       <div class="truco-center">
-        <div class="truco-center__meta">
-          <div class="truco-vira-box">
-            <span>Vira</span>
-            <div id="vira-card"></div>
-          </div>
-          <div class="truco-manilhas-box">
-            <span>Manilhas</span>
-            <div id="manilhas" class="truco-manilhas__row"></div>
-          </div>
-        </div>
         <div class="truco-played" id="table-cards"></div>
-        <p class="truco-toast" id="truco-msg"></p>
       </div>
+
+      <p class="truco-toast" id="truco-msg"></p>
 
       <div class="truco-seat truco-seat--me" data-seat-slot="me">
         <div class="truco-avatar is-me" id="avatar-me"><span class="truco-avatar__name">Você</span><span class="truco-react" hidden></span></div>
