@@ -1,0 +1,32 @@
+{
+  "name": "LESTBET 369",
+  "short_name": "LESTBET",
+  "description": "Tigre Aviator na LESTBET 369 — jogue com responsabilidade.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07040c",
+  "theme_color": "#07040c",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/games/tigre-aviator-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -116,13 +117,13 @@ return {1, limit - current, limit - current, now}
 		return nil, fmt.Errorf("failed to check rate limit: %w", err)
 	}
 
-	// Parse Lua script result
+	// Parse Lua script result (Redis may return int64 or string)
 	resultSlice := result.([]any)
-	allowed := resultSlice[0].(int64) == 1
-	remaining := resultSlice[1].(int64)
+	allowed := toInt64(resultSlice[0]) == 1
+	remaining := toInt64(resultSlice[1])
 	var resetTime time.Time
 	if len(resultSlice) > 3 {
-		resetTimestamp := resultSlice[3].(int64)
+		resetTimestamp := toInt64(resultSlice[3])
 		resetTime = time.Unix(0, resetTimestamp)
 	} else {
 		resetTime = windowEnd
@@ -252,4 +253,23 @@ func (rl *RedisLimiter) HealthCheck(ctx context.Context) error {
 // GetRedisClient returns the underlying Redis client (for advanced usage)
 func (rl *RedisLimiter) GetRedisClient() *redis.Client {
 	return rl.client
+}
+
+func toInt64(v any) int64 {
+	switch n := v.(type) {
+	case int64:
+		return n
+	case int:
+		return int64(n)
+	case float64:
+		return int64(n)
+	case string:
+		parsed, err := strconv.ParseInt(n, 10, 64)
+		if err != nil {
+			return 0
+		}
+		return parsed
+	default:
+		return 0
+	}
 }

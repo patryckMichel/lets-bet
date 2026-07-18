@@ -1,0 +1,61 @@
+/* LESTBET overrides on Phoenix dark */
+:root,
+[data-bs-theme="dark"] {
+  --phoenix-primary: #3874ff;
+  --phoenix-primary-rgb: 56, 116, 255;
+}
+
+.logo-text {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin: 0;
+  color: var(--phoenix-emphasis-color, #fff);
+}
+
+.admin-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.admin-badge--ok { background: rgba(37, 196, 125, 0.18); color: #25c47d; }
+.admin-badge--warn { background: rgba(255, 193, 7, 0.18); color: #ffc107; }
+.admin-badge--err { background: rgba(230, 55, 87, 0.18); color: #e63757; }
+
+.avatar-name {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-weight: 700;
+}
+
+.px-card-stat {
+  border-radius: 0.5rem;
+  padding: 1rem 1.15rem;
+  height: 100%;
+}
+
+.px-card-stat .stat-label {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.px-card-stat .stat-value {
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.chart-box {
+  min-height: 280px;
+  position: relative;
+}
+
+.chart-box canvas {
+  max-height: 280px;
+}

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LESTBET 369 — Admin</title>
+  <link rel="icon" type="image/png" href="/assets/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .admin-wrap { min-height: 100vh; padding: 1.5rem 1.25rem 3rem; max-width: 980px; margin: 0 auto; }
+    .admin-card {
+      padding: 1.5rem 1.25rem;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+      box-shadow: var(--shadow);
+    }
+    .admin-head { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .admin-head img { width: 48px; height: 48px; border-radius: 12px; }
+    .admin-head h1 { margin: 0; font-family: var(--display); font-size: 1.45rem; }
+    .admin-meta { color: var(--muted); margin: 0; font-size: 0.92rem; }
+    .admin-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 1rem 0; }
+    table.leads { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    table.leads th, table.leads td {
+      text-align: left; padding: 0.65rem 0.5rem; border-bottom: 1px solid var(--line); vertical-align: top;
+    }
+    table.leads th { color: var(--gold-2); font-weight: 800; }
+    .status-msg { min-height: 1.2em; font-weight: 700; color: var(--gold-2); }
+    .is-hidden { display: none !important; }
+    #gate-form { display: grid; gap: 0.85rem; max-width: 360px; }
+  </style>
+</head>
+<body>
+  <div class="glow glow-a" aria-hidden="true"></div>
+  <div class="glow glow-b" aria-hidden="true"></div>
+  <main class="admin-wrap">
+    <div class="admin-card">
+      <div class="admin-head">
+        <img src="/assets/logo.png" alt="" width="48" height="48" />
+        <div>
+          <h1>Admin LESTBET 369</h1>
+          <p class="admin-meta">Leads da lista VIP</p>
+        </div>
+      </div>
+
+      <div id="gate">
+        <form id="gate-form">
+          <label>
+            Senha admin
+            <input id="admin-pass" type="password" autocomplete="current-password" required placeholder="Senha do painel" />
+          </label>
+          <button class="btn btn-primary" type="submit">Entrar</button>
+          <p class="status-msg" id="gate-status" role="status"></p>
+        </form>
+      </div>
+
+      <div id="panel" class="is-hidden">
+        <div class="admin-actions">
+          <button class="btn btn-primary" id="btn-refresh" type="button">Atualizar lista</button>
+          <button class="btn btn-secondary" id="btn-logout" type="button">Sair</button>
+          <a class="btn btn-secondary" href="/">Login jogador</a>
+          <a class="btn btn-secondary" href="/acessovip">Captura VIP</a>
+        </div>
+        <p class="status-msg" id="panel-status" role="status"></p>
+        <div style="overflow-x:auto">
+          <table class="leads">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>WhatsApp</th>
+                <th>Instagram</th>
+                <th>Fonte</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody id="leads-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="/config.js"></script>
+  <script>
+    (() => {
+      const TOKEN_KEY = "lestbet_admin_token";
+      const gate = document.getElementById("gate");
+      const panel = document.getElementById("panel");
+      const gateForm = document.getElementById("gate-form");
+      const gateStatus = document.getElementById("gate-status");
+      const panelStatus = document.getElementById("panel-status");
+      const tbody = document.getElementById("leads-body");
+
+      const apiBase = (() => {
+        const host = window.location.hostname;
+        const isLocal = host === "127.0.0.1" || host === "localhost";
+        return isLocal ? "http://127.0.0.1:8089" : "";
+      })();
+
+      const showPanel = (on) => {
+        gate.classList.toggle("is-hidden", on);
+        panel.classList.toggle("is-hidden", !on);
+      };
+
+      const loadLeads = async (token) => {
+        panelStatus.textContent = "Carregando...";
+        const res = await fetch(apiBase + "/api/admin/leads", {
+          headers: { "X-Admin-Token": token },
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.ok) throw new Error(data?.error || "Falha ao carregar leads");
+        const rows = data.leads || [];
+        tbody.innerHTML = rows.map((r) => `
+          <tr>
+            <td>${r.id}</td>
+            <td>${escapeHtml(r.name || "")}</td>
+            <td>${escapeHtml(r.whatsapp || "")}</td>
+            <td>${escapeHtml(r.instagram || "—")}</td>
+            <td>${escapeHtml(r.source || "")}</td>
+            <td>${escapeHtml(r.created_at || "")}</td>
+          </tr>
+        `).join("") || `<tr><td colspan="6">Nenhum lead ainda.</td></tr>`;
+        panelStatus.textContent = rows.length + " lead(s)";
+      };
+
+      const escapeHtml = (s) => String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+      gateForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const token = document.getElementById("admin-pass").value.trim();
+        if (!token) return;
+        gateStatus.textContent = "Verificando...";
+        try {
+          await loadLeads(token);
+          sessionStorage.setItem(TOKEN_KEY, token);
+          showPanel(true);
+          gateStatus.textContent = "";
+        } catch (err) {
+          gateStatus.textContent = err.message || "Senha inválida";
+        }
+      });
+
+      document.getElementById("btn-refresh")?.addEventListener("click", async () => {
+        const token = sessionStorage.getItem(TOKEN_KEY);
+        if (!token) return showPanel(false);
+        try { await loadLeads(token); } catch (err) {
+          panelStatus.textContent = err.message || "Erro";
+          if (/unauthorized|invalid/i.test(String(err.message))) {
+            sessionStorage.removeItem(TOKEN_KEY);
+            showPanel(false);
+          }
+        }
+      });
+
+      document.getElementById("btn-logout")?.addEventListener("click", () => {
+        sessionStorage.removeItem(TOKEN_KEY);
+        showPanel(false);
+      });
+
+      const saved = sessionStorage.getItem(TOKEN_KEY);
+      if (saved) {
+        showPanel(true);
+        loadLeads(saved).catch(() => {
+          sessionStorage.removeItem(TOKEN_KEY);
+          showPanel(false);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

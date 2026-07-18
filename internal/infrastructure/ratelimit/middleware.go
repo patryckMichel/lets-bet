@@ -93,10 +93,9 @@ func (rl *RedisLimiter) getLimitForType(limitType string) int {
 
 // getClientIP extracts the real client IP from the request with proxy validation
 func getClientIP(r *http.Request, trustedProxyCIDRs []string) string {
-	// Remove port from RemoteAddr for comparison
-	remoteAddr := r.RemoteAddr
-	if idx := strings.LastIndex(remoteAddr, ":"); idx != -1 {
-		remoteAddr = remoteAddr[:idx]
+	remoteAddr, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		remoteAddr = r.RemoteAddr
 	}
 
 	// Check if request comes from trusted proxy
@@ -120,11 +119,7 @@ func getClientIP(r *http.Request, trustedProxyCIDRs []string) string {
 		}
 	}
 
-	// Default to RemoteAddr if not from trusted proxy or headers invalid
-	if idx := strings.LastIndex(r.RemoteAddr, ":"); idx != -1 {
-		return r.RemoteAddr[:idx]
-	}
-	return r.RemoteAddr
+	return remoteAddr
 }
 
 // isTrustedProxy checks if the given IP is in the trusted proxy CIDR list

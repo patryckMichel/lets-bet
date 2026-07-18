@@ -1,0 +1,412 @@
+/* Tigre Aviator — layout estilo crash mobile */
+.page-crash .site-footer {
+  display: none;
+}
+
+.page-crash .topbar {
+  max-width: 480px;
+  margin: 0 auto;
+  background: #0b0b0f;
+  border-bottom-color: rgba(246, 200, 76, 0.16);
+}
+
+.page-crash main {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: calc(100vh - 58px);
+  background: #0b0b0f;
+}
+
+.aviator {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.65rem 0.7rem 1.2rem;
+  color: #f5f5f5;
+  font-family: "Manrope", system-ui, sans-serif;
+}
+
+.aviator__top {
+  display: none;
+}
+
+.aviator__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  color: #fff;
+  font-family: "Bricolage Grotesque", Georgia, serif;
+  font-weight: 800;
+}
+
+.aviator__brand img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.aviator__balance {
+  text-align: right;
+  line-height: 1.15;
+}
+
+.aviator__balance span {
+  display: block;
+  font-size: 0.68rem;
+  color: #9aa0a6;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.aviator__balance strong {
+  color: #39d353;
+  font-size: 1.05rem;
+}
+
+.aviator__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f6c84c, #d4a017);
+  color: #1a1000;
+  font-weight: 800;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.aviator__back {
+  color: #ffe7a3;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.aviator__history {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+  scrollbar-width: none;
+}
+
+.aviator__history::-webkit-scrollbar {
+  display: none;
+}
+
+.hist-chip {
+  flex: 0 0 auto;
+  min-height: 28px;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #1a1d24;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.hist-chip.is-low { color: #7dd3fc; }
+.hist-chip.is-mid { color: #c084fc; }
+.hist-chip.is-high { color: #fb7185; }
+
+.aviator__stage {
+  position: relative;
+  overflow: hidden;
+  min-height: 240px;
+  border-radius: 16px;
+  background: radial-gradient(circle at 50% 120%, #2a1030 0%, #12151c 45%, #0b0b0f 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.aviator__sky {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 120%, rgba(255, 255, 255, 0.03) 0 8deg, transparent 8deg 16deg);
+  opacity: 0.55;
+}
+
+.aviator__trail {
+  position: absolute;
+  left: 8%;
+  bottom: 18%;
+  width: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #e11d2e 30%, #f6c84c);
+  transform-origin: left center;
+  transform: rotate(-18deg);
+  opacity: 0;
+  transition: width 0.1s linear;
+}
+
+.aviator__plane {
+  position: absolute;
+  left: 8%;
+  bottom: 14%;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+  transition: transform 0.1s linear;
+  z-index: 2;
+}
+
+.aviator__center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.aviator__status {
+  margin: 0 0 0.2rem;
+  color: #b8bec7;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.aviator__mult {
+  font-family: "Bricolage Grotesque", Georgia, serif;
+  font-size: clamp(2.8rem, 12vw, 3.6rem);
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 0 24px rgba(246, 200, 76, 0.35);
+}
+
+.aviator__mult span {
+  color: #f6c84c;
+}
+
+.aviator__stage.is-crashed .aviator__mult {
+  color: #ff5c6c;
+  text-shadow: 0 0 24px rgba(225, 29, 46, 0.45);
+}
+
+.aviator__players {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.65rem;
+  z-index: 3;
+  font-size: 0.75rem;
+  color: #9aa0a6;
+  font-weight: 700;
+}
+
+.aviator__panels {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.bet-panel {
+  border-radius: 14px;
+  background: #151820;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.55rem;
+}
+
+.bet-panel__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.bet-panel__tabs button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #9aa0a6;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.bet-panel__tabs button.is-active {
+  background: #222733;
+  color: #fff;
+}
+
+.bet-panel__body {
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.bet-amount {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  gap: 0.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.bet-amount button,
+.bet-presets button {
+  border: 0;
+  border-radius: 8px;
+  background: #222733;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.bet-amount input,
+.bet-auto input {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0f1218;
+  color: #fff;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.bet-presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.25rem;
+}
+
+.bet-auto {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: #9aa0a6;
+  font-weight: 700;
+}
+
+.bet-auto.hidden {
+  display: none;
+}
+
+.bet-action {
+  border: 0;
+  border-radius: 12px;
+  display: grid;
+  place-content: center;
+  gap: 0.1rem;
+  font-weight: 800;
+  cursor: pointer;
+  min-height: 88px;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.bet-action:hover {
+  filter: brightness(1.06);
+}
+
+.bet-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.bet-action span {
+  font-size: 0.85rem;
+}
+
+.bet-action strong {
+  font-size: 1.05rem;
+}
+
+.bet-action--bet {
+  background: linear-gradient(180deg, #f6c84c, #d4a017);
+  color: #3a1600;
+}
+
+.bet-action--cashout {
+  background: linear-gradient(180deg, #57e06d, #1fad3a);
+  color: #06240c;
+}
+
+.bet-action--waiting {
+  background: #2a3140;
+  color: #c9d1d9;
+}
+
+.aviator__feed {
+  border-radius: 14px;
+  background: #151820;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.55rem;
+}
+
+.aviator__feed-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.45rem;
+}
+
+.aviator__feed-tabs button {
+  border: 0;
+  background: #222733;
+  color: #fff;
+  border-radius: 8px;
+  min-height: 32px;
+  padding: 0 0.8rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.aviator__feed-meta {
+  font-size: 0.78rem;
+  color: #9aa0a6;
+  margin-bottom: 0.4rem;
+  font-weight: 700;
+}
+
+.aviator__feed-head,
+.feed-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr 0.7fr 0.9fr;
+  gap: 0.35rem;
+  align-items: center;
+  font-size: 0.78rem;
+}
+
+.aviator__feed-head {
+  color: #9aa0a6;
+  padding: 0.25rem 0.35rem;
+  font-weight: 700;
+}
+
+.feed-row {
+  padding: 0.4rem 0.35rem;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.feed-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.feed-row.is-won {
+  background: rgba(57, 211, 83, 0.08);
+}
+
+.feed-row .x {
+  color: #c084fc;
+}
+
+@media (min-width: 720px) {
+  .page-crash main {
+    max-width: 520px;
+    border-left: 1px solid rgba(255, 255, 255, 0.04);
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .aviator__stage {
+    min-height: 280px;
+  }
+}
