@@ -38,11 +38,15 @@
   let lastTricksKey = '';
   let lastTableLen = 0;
   let lastTrickWinner = null;
+  let lastHandId = null;
+  let lastTrickAnimKey = '';
   let matchIntroPlayed = false;
   let endHandled = false;
   let endReturnTimer = null;
   let endCountdownTimer = null;
-  let animBusy = false;
+  let animQueue = Promise.resolve();
+  let skipPlayCodes = new Set();
+  let flownTableCodes = new Set();
 
   const suitSymbol = { clubs: '♣', hearts: '♥', spades: '♠', diamonds: '♦' };
   const isRed = (s) => s === 'hearts' || s === 'diamonds';
@@ -50,6 +54,11 @@
 
   function sleep(ms) {
     return new Promise((r) => setTimeout(r, ms));
+  }
+
+  function enqueueAnim(fn) {
+    animQueue = animQueue.then(() => fn()).catch(() => {});
+    return animQueue;
   }
 
   function cardHtml(card, opts = {}) {
@@ -131,65 +140,118 @@
   async function flashFelt(kind) {
     if (!felt) return;
     felt.classList.remove('is-flash-raise', 'is-flash-accept', 'is-flash-run');
-    // reflow
     void felt.offsetWidth;
     felt.classList.add(`is-flash-${kind}`);
     await sleep(500);
     felt.classList.remove(`is-flash-${kind}`);
   }
 
-  async function playDealSequence(data, opts = {}) {
-    if (animBusy) return;
-    animBusy = true;
-    const isStart = !!opts.isStart;
-    try {
-      if (isStart) {
-        await showFx('Vamos jogar!', 'accept');
+  function findSeatBackEl(seatIndex, map) {
+    const slots = [
+      ['top', map.top],
+      ['left', map.left],
+      ['right', map.right],
+      ['me', map.me],
+    ];
+    for (const [slot, seat] of slots) {
+      if (seat && Number(seat.seat_index) === Number(seatIndex)) {
+        const backs = document.getElementById(`backs-${slot}`) || document.querySelector(`[data-seat-slot="${slot}"] .truco-backs`);
+        const back = backs?.querySelector('.truco-back');
+        if (back) return back;
+        return document.getElementById(`avatar-${slot}`) || document.querySelector(`[data-seat-slot="${slot}"] .truco-avatar`);
       }
-      if (deck) {
-        deck.classList.add('is-visible', 'is-shuffle');
-        await sleep(600);
-        deck.classList.remove('is-shuffle');
-      }
-
-      const handEl = document.getElementById('my-hand');
-      if (handEl) {
-        handEl.querySelectorAll('.truco-card').forEach((el, i) => {
-          el.classList.add('is-fly-in');
-          el.style.animationDelay = `${i * 90}ms`;
-        });
-      }
-      ['backs-top', 'backs-left', 'backs-right'].forEach((id) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.querySelectorAll('.truco-back').forEach((b, i) => {
-          b.style.animation = `cardDeal 0.4s ease ${i * 80}ms both`;
-        });
-      });
-      await sleep(450);
-
-      const vira = document.getElementById('vira-card');
-      const viraCard = vira?.querySelector('.truco-card');
-      if (viraCard) {
-        viraCard.classList.add('is-flip-in');
-      }
-      const man = document.getElementById('manilhas');
-      if (man) {
-        man.classList.add('is-reveal');
-        setTimeout(() => man.classList.remove('is-reveal'), 500);
-      }
-      await sleep(400);
-      if (deck) deck.classList.remove('is-visible');
-    } finally {
-      animBusy = false;
     }
+    return document.getElementById('avatar-top');
   }
 
-  async function playTrickWinFx(winner) {
+  async function flyCardFromTo(sourceEl, card, targetEl) {
+    if (!sourceEl || !targetEl || !card) return;
+    const from = sourceEl.getBoundingClientRect();
+    const to = targetEl.getBoundingClientRect();
+    if (from.width < 2 || to.width < 2) return;
+
+    const clone = document.createElement('div');
+    const red = isRed(card.suit);
+    clone.className = `truco-fly-card${red ? ' red' : ''}`;
+    clone.innerHTML = `<span>${card.rank || '?'}</span><span>${suitSymbol[card.suit] || ''}</span>`;
+    clone.style.left = `${from.left}px`;
+    clone.style.top = `${from.top}px`;
+    clone.style.width = `${Math.max(from.width, 40)}px`;
+    clone.style.height = `${Math.max(from.height, 56)}px`;
+    document.body.appendChild(clone);
+    void clone.offsetWidth;
+
+    const destW = Math.min(to.width || 52, 52);
+    const destH = Math.min(to.height || 74, 74);
+    const dx = to.left + (to.width - destW) / 2 - from.left;
+    const dy = to.top + (to.height - destH) / 2 - from.top;
+    clone.style.width = `${destW}px`;
+    clone.style.height = `${destH}px`;
+    clone.style.transform = `translate(${dx}px, ${dy}px)`;
+    clone.classList.add('is-flying');
+    await sleep(400);
+    clone.remove();
+  }
+
+  async function playDealSequence(data, opts = {}) {
+    const isStart = !!opts.isStart;
+    if (isStart) {
+      await showFx('Jogo iniciado!', 'accept');
+    } else {
+      await showFx('Nova mão', 'accept');
+      await sleep(150);
+    }
+    if (deck) {
+      deck.classList.add('is-visible', 'is-shuffle');
+      await sleep(650);
+      deck.classList.remove('is-shuffle');
+    }
+
+    const handEl = document.getElementById('my-hand');
+    if (handEl) {
+      handEl.querySelectorAll('.truco-card').forEach((el, i) => {
+        el.classList.add('is-fly-in');
+        el.style.animationDelay = `${i * 100}ms`;
+      });
+    }
+    ['backs-top', 'backs-left', 'backs-right'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.querySelectorAll('.truco-back').forEach((b, i) => {
+        b.style.animation = `cardDeal 0.4s ease ${i * 90}ms both`;
+      });
+    });
+    await sleep(500);
+
+    const vira = document.getElementById('vira-card');
+    const viraCard = vira?.querySelector('.truco-card');
+    if (viraCard) {
+      viraCard.classList.add('is-flip-in');
+    }
+    const man = document.getElementById('manilhas');
+    if (man) {
+      man.classList.add('is-reveal');
+      setTimeout(() => man.classList.remove('is-reveal'), 500);
+    }
+    await sleep(450);
+    if (deck) deck.classList.remove('is-visible');
+  }
+
+  async function playTrickWinFx(winner, cards) {
     const played = document.getElementById('table-cards');
-    if (played) {
+    if (played && Array.isArray(cards) && cards.length) {
+      played.innerHTML = cards.map((t) => cardHtml(t.card, {})).join('');
       played.classList.add('is-trick-win');
-      setTimeout(() => played.classList.remove('is-trick-win'), 700);
+      await sleep(700);
+      played.classList.remove('is-trick-win');
+      played.classList.add('is-recollect');
+      await sleep(380);
+      played.classList.remove('is-recollect');
+      played.innerHTML = '';
+    } else if (played) {
+      played.classList.add('is-trick-win');
+      await sleep(500);
+      played.classList.remove('is-trick-win');
     }
     const label = winner === 'us' ? 'Nós!' : 'Eles!';
     await showFx(label, winner === 'us' ? 'accept' : 'run');
@@ -456,15 +518,15 @@
     const raise = data.pending_raise || data.last_raise || null;
 
     if (raise && raise !== lastRaise) {
-      playRaiseFx(raise);
+      enqueueAnim(() => playRaiseFx(raise));
       lastRaise = raise;
     } else if (!raise) {
       lastRaise = null;
     }
 
     if (msg && msg !== lastMessage) {
-      if (msg.includes('aceito')) playAcceptFx();
-      if (msg.includes('correu') || msg.includes('correr')) playRunFx();
+      if (msg.includes('aceito')) enqueueAnim(() => playAcceptFx());
+      if (msg.includes('correu') || msg.includes('correr')) enqueueAnim(() => playRunFx());
       lastMessage = msg;
     }
   }
@@ -536,17 +598,66 @@
     document.getElementById('manilhas').innerHTML = (data.manilhas || []).map((c) => cardHtml(c, { sm: true })).join('');
 
     const tableCards = data.table || [];
-    const playedAnim = tableCards.length > lastTableLen ? 'is-from-hand is-play-anim' : '';
-    document.getElementById('table-cards').innerHTML = tableCards
-      .map((t, i) => cardHtml(t.card, { anim: i === tableCards.length - 1 ? playedAnim : '' }))
-      .join('');
+    const tableEl = document.getElementById('table-cards');
+    const mySeatIdx = map.me?.seat_index;
+    const newPlays = tableCards.length > lastTableLen
+      ? tableCards.slice(lastTableLen)
+      : [];
 
-    // Vaza fechou (mesa limpa + tricks mudou)
-    if (tricksChanged && prevTricksKey !== '' && tableCards.length === 0) {
-      const prevUs = Number(prevTricksKey.split('-')[0] || 0);
-      const tw = data.last_trick_winner || (tricks.us > prevUs ? 'us' : 'them');
-      playTrickWinFx(tw);
+    // Render mesa (cartas já voadas sem pop-in)
+    tableEl.innerHTML = tableCards.map((t) => {
+      const code = t.card?.code;
+      const already = code && (skipPlayCodes.has(String(code)) || flownTableCodes.has(String(code)));
+      return cardHtml(t.card, { anim: already ? '' : '' });
+    }).join('');
+
+    // Voo de cartas novas do adversário (ou ainda não animadas)
+    newPlays.forEach((play) => {
+      const code = play.card?.code ? String(play.card.code) : '';
+      if (!code || skipPlayCodes.has(code) || flownTableCodes.has(code)) return;
+      const isMine = mySeatIdx !== undefined && Number(play.seat) === Number(mySeatIdx);
+      if (isMine) {
+        flownTableCodes.add(code);
+        return;
+      }
+      flownTableCodes.add(code);
+      const fromEl = findSeatBackEl(play.seat, map);
+      enqueueAnim(async () => {
+        await flyCardFromTo(fromEl, play.card, tableEl);
+        // reforça carta na mesa após o voo
+        if (!tableEl.querySelector(`[data-code="${code}"]`)) {
+          tableEl.insertAdjacentHTML('beforeend', cardHtml(play.card, {}));
+        }
+      });
+    });
+
+    const handId = data.hand_id ?? null;
+    const handIdChanged = lastHandId !== null && handId !== null && handId !== lastHandId;
+    const lastTrick = data.last_trick || null;
+    const trickKey = lastTrick
+      ? `${lastTrick.winner}|${(lastTrick.cards || []).map((c) => c.card?.code).join(',')}`
+      : '';
+    const tricksChanged = tricksKey !== prevTricksKey && prevTricksKey !== '';
+    const shouldAnimTrick = trickKey && trickKey !== lastTrickAnimKey
+      && (tricksChanged || handIdChanged || (tableCards.length === 0 && lastTrick));
+
+    if (shouldAnimTrick) {
+      lastTrickAnimKey = trickKey;
+      const tw = lastTrick.winner || data.last_trick_winner || 'us';
       lastTrickWinner = tw;
+      const cards = lastTrick.cards || [];
+      enqueueAnim(async () => {
+        for (const play of cards) {
+          const code = play.card?.code ? String(play.card.code) : '';
+          if (!code || flownTableCodes.has(code) || skipPlayCodes.has(code)) continue;
+          const isMine = mySeatIdx !== undefined && Number(play.seat) === Number(mySeatIdx);
+          if (isMine) continue;
+          flownTableCodes.add(code);
+          const fromEl = findSeatBackEl(play.seat, map);
+          await flyCardFromTo(fromEl, play.card, tableEl);
+        }
+        await playTrickWinFx(tw, cards);
+      });
     }
     lastTricksKey = tricksKey;
     lastTableLen = tableCards.length;
@@ -559,11 +670,12 @@
     lastHandKey = handKey;
 
     const canPlay = data.your_turn && data.phase === 'play' && !data.pending_raise;
+    const dealSoon = newHand || handIdChanged || (viraChanged && !lastVira);
     handEl.innerHTML = (data.hand || []).map((c) =>
       cardHtml(c, {
-        clickable: canPlay,
+        clickable: canPlay && !dealSoon,
         selected: selectedCard === String(c.code),
-        anim: newHand ? 'is-fly-in' : '',
+        anim: '',
       })
     ).join('');
 
@@ -576,10 +688,21 @@
       });
     });
 
-    if (newHand || (viraChanged && !lastVira)) {
+    if (dealSoon) {
       if (isMatchStart) matchIntroPlayed = true;
-      playDealSequence(data, { isStart: isMatchStart });
+      const start = isMatchStart || (lastHandId === null && handId === 1);
+      flownTableCodes.clear();
+      skipPlayCodes.clear();
+      enqueueAnim(async () => {
+        // re-aplica cartas com animação de deal após shuffle
+        handEl.querySelectorAll('.truco-card').forEach((el, i) => {
+          el.classList.add('is-fly-in');
+          el.style.animationDelay = `${i * 100}ms`;
+        });
+        await playDealSequence(data, { isStart: start });
+      });
     }
+    if (handId !== null) lastHandId = handId;
     if (viraCode) lastVira = viraCode;
 
     const msg = document.getElementById('truco-msg');
@@ -665,9 +788,35 @@
       if (a.t === 'raise') body.value = a.value;
       if (a.t === 'react') body.emoji = a.emoji;
 
-      if (a.t === 'raise') playRaiseFx(a.value || 3);
-      if (a.t === 'accept') playAcceptFx();
-      if (a.t === 'run' || a.t === 'mao11_run') playRunFx();
+      if (a.t === 'raise') enqueueAnim(() => playRaiseFx(a.value || 3));
+      if (a.t === 'accept') enqueueAnim(() => playAcceptFx());
+      if (a.t === 'run' || a.t === 'mao11_run') enqueueAnim(() => playRunFx());
+
+      if (a.t === 'play') {
+        const code = String(selectedCard);
+        const handEl = document.getElementById('my-hand');
+        const src = handEl?.querySelector(`.truco-card[data-code="${code}"]`);
+        const tableEl = document.getElementById('table-cards');
+        const rankEl = src?.querySelector('span');
+        const cardApprox = {
+          code,
+          rank: rankEl?.textContent || '?',
+          suit: src?.classList.contains('red') ? 'hearts' : 'clubs',
+        };
+        // tenta ler naipe do segundo span
+        const spans = src?.querySelectorAll('span');
+        if (spans && spans.length >= 2) {
+          const sym = spans[1].textContent;
+          const inv = Object.fromEntries(Object.entries(suitSymbol).map(([k, v]) => [v, k]));
+          if (inv[sym]) cardApprox.suit = inv[sym];
+          cardApprox.rank = spans[0].textContent;
+        }
+        skipPlayCodes.add(code);
+        if (src) src.style.opacity = '0';
+        await enqueueAnim(async () => {
+          await flyCardFromTo(src, cardApprox, tableEl);
+        });
+      }
 
       const data = await api(`/api/truco/${matchId}/act`, body);
       selectedCard = null;
@@ -693,6 +842,10 @@
       lastTricksKey = '';
       lastTableLen = 0;
       lastTrickWinner = null;
+      lastHandId = null;
+      lastTrickAnimKey = '';
+      skipPlayCodes.clear();
+      flownTableCodes.clear();
       matchIntroPlayed = false;
       render(data);
       if (data.status === 'playing' || data.status === 'waiting') startPoll();

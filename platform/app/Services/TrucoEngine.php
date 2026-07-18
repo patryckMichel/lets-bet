@@ -372,7 +372,9 @@ class TrucoEngine
             ],
             'tricks_us' => (int) ($state['tricks_us'] ?? 0),
             'tricks_them' => (int) ($state['tricks_them'] ?? 0),
+            'hand_id' => (int) ($state['hand_id'] ?? 1),
             'last_trick_winner' => $state['last_trick_winner'] ?? null,
+            'last_trick' => $this->presentLastTrick($state['last_trick'] ?? null),
             'escuro' => $escuro,
             'mao_11' => (bool) ($state['mao_11'] ?? false) || $phase === 'mao_11_decision',
             'mao_de_onze' => $phase === 'mao_11_decision' || (bool) ($state['mao_11'] ?? false),
@@ -662,6 +664,10 @@ class TrucoEngine
             $state['tricks_them'] = (int) $state['tricks_them'] + 1;
         }
         $state['last_trick_winner'] = $winner;
+        $state['last_trick'] = [
+            'winner' => $winner,
+            'cards' => $state['table'],
+        ];
         $state['table'] = [];
         $state['turn'] = $winner;
 
@@ -693,6 +699,10 @@ class TrucoEngine
             $state['tricks_them'] = (int) $state['tricks_them'] + 1;
         }
         $state['last_trick_winner'] = $winner;
+        $state['last_trick'] = [
+            'winner' => $winner,
+            'cards' => $state['table'],
+        ];
         $state['table'] = [];
         $state['turn_seat'] = (int) $best['seat'];
         $state['turn'] = $winner;
@@ -726,7 +736,12 @@ class TrucoEngine
         }
 
         $match->hand_value = 1;
-        $match->state = $this->newHandState($match, false);
+        $preservedTrick = $state['last_trick'] ?? null;
+        $new = $this->newHandState($match, false);
+        if (is_array($preservedTrick)) {
+            $new['last_trick'] = $preservedTrick;
+        }
+        $match->state = $new;
         $this->bumpDeadline($match);
         $match->save();
     }
@@ -1071,14 +1086,18 @@ class TrucoEngine
             $mao11Msg = null;
         }
 
+        $prevHandId = (int) (($match->state['hand_id'] ?? 0));
         $base = [
             'phase' => $phase,
+            'hand_id' => $first ? 1 : max(1, $prevHandId) + 1,
             'vira' => $vira,
             'manilha_rank' => $manilhaRank,
             'manilhas' => $manilhas,
             'table' => [],
             'tricks_us' => 0,
             'tricks_them' => 0,
+            'last_trick' => null,
+            'last_trick_winner' => null,
             'escuro' => $escuro,
             'mao_11' => $escuro || ((int) $match->hand_value >= 3 && ($mao11Us || $mao11Them)),
             'pending_truco' => null,
@@ -1318,6 +1337,33 @@ class TrucoEngine
             'code' => $code,
             'rank' => $this->rankOf($code),
             'suit' => $suitMap[$this->suitOf($code)] ?? 'clubs',
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $trick
+     * @return array{winner: ?string, cards: list<array{team: mixed, seat: mixed, card: ?array}>}|null
+     */
+    protected function presentLastTrick(?array $trick): ?array
+    {
+        if ($trick === null || $trick === []) {
+            return null;
+        }
+
+        $cards = [];
+        foreach ($trick['cards'] ?? [] as $play) {
+            $raw = $play['card'] ?? null;
+            $code = is_array($raw) ? ($raw['code'] ?? null) : $raw;
+            $cards[] = [
+                'team' => $play['team'] ?? null,
+                'seat' => $play['seat'] ?? null,
+                'card' => $this->presentCard(is_string($code) ? $code : null),
+            ];
+        }
+
+        return [
+            'winner' => $trick['winner'] ?? null,
+            'cards' => $cards,
         ];
     }
 }
