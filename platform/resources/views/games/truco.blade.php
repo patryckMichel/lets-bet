@@ -11,28 +11,38 @@
      data-stakes='@json($stakes)'>
 
   <section id="truco-hub" class="truco-hub">
-    <img class="truco-hub__art" src="{{ asset('images/games/tigre-truco.png') }}" alt="Tigre do Truco">
+    <div class="truco-hub__hero">
+      <img class="truco-hub__art" src="{{ asset('images/games/tigre-truco.png') }}" alt="Tigre do Truco">
+      <div class="truco-hub__glow" aria-hidden="true"></div>
+    </div>
+    <p class="truco-hub__kicker">LESTBET 369</p>
     <h1>Tigre do Truco</h1>
-    <p>1x1 rápido ou 2x2 com amigo. Partida até 12 pontos.</p>
+    <p class="truco-hub__lead">1x1 rápido ou 2x2 com amigo. Partida até 12 pontos.</p>
 
-    <div class="truco-modes">
-      <button type="button" class="truco-mode is-active" data-mode="1v1">1x1 rápido</button>
-      <button type="button" class="truco-mode" data-mode="2v2">2x2 sala</button>
+    <div class="truco-modes" role="group" aria-label="Modo de jogo">
+      <button type="button" class="truco-mode is-active" data-mode="1v1">
+        <span class="truco-mode__title">1x1</span>
+        <span class="truco-mode__sub">Rápido</span>
+      </button>
+      <button type="button" class="truco-mode" data-mode="2v2">
+        <span class="truco-mode__title">2x2</span>
+        <span class="truco-mode__sub">Com amigo</span>
+      </button>
     </div>
 
     <div id="hub-2v2-extra" class="truco-2v2-extra" hidden>
-      <label class="truco-label">Entrar com código do amigo</label>
+      <label class="truco-label" for="join-code">Entrar com código do amigo</label>
       <div class="truco-join-row">
-        <input type="text" id="join-code" class="truco-input" maxlength="8" placeholder="Código">
+        <input type="text" id="join-code" class="truco-input" maxlength="8" placeholder="Código" autocomplete="off">
         <button type="button" class="truco-cta truco-cta--sm" id="btn-join">Entrar</button>
       </div>
       <p class="truco-or">ou crie uma sala abaixo</p>
     </div>
 
-    <p class="truco-label">Valor de entrada</p>
+    <p class="truco-label truco-label--center">Valor de entrada</p>
     <div class="truco-stakes" id="truco-stakes"></div>
     <p id="truco-hub-error" class="truco-error" hidden></p>
-    <button type="button" class="truco-cta" id="truco-start" disabled>Jogar</button>
+    <button type="button" class="truco-cta truco-cta--pulse" id="truco-start" disabled>Jogar</button>
   </section>
 
   <section id="truco-lobby-room" class="truco-hub" hidden>
