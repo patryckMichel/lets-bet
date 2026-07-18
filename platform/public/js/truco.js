@@ -119,8 +119,15 @@
   }
 
   function setResultOpen(open) {
+    if (!result) return;
     result.hidden = !open;
+    result.setAttribute('aria-hidden', open ? 'false' : 'true');
     result.classList.toggle('is-open', !!open);
+    if (open) {
+      result.style.removeProperty('display');
+    } else {
+      result.style.setProperty('display', 'none', 'important');
+    }
   }
 
   function showHub() {

@@ -113,7 +113,7 @@
     </div>
   </section>
 
-  <div id="truco-result" class="truco-result" hidden>
+  <div id="truco-result" class="truco-result" hidden aria-hidden="true" style="display:none !important">
     <div class="truco-result__box">
       <h2 id="result-title">Fim</h2>
       <p id="result-body"></p>
@@ -125,9 +125,12 @@
 @endsection
 
 @push('head')
-  <link rel="stylesheet" href="{{ asset('css/truco.css') }}">
+  @php
+    $trucoAssetV = trim((string) (@file_get_contents(base_path('VERSION')) ?: '1'));
+  @endphp
+  <link rel="stylesheet" href="{{ asset('css/truco.css') }}?v={{ $trucoAssetV }}">
 @endpush
 
 @push('scripts')
-  <script src="{{ asset('js/truco.js') }}" defer></script>
+  <script src="{{ asset('js/truco.js') }}?v={{ $trucoAssetV }}" defer></script>
 @endpush

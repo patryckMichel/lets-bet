@@ -452,14 +452,18 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.72);
-  display: none;
+  display: none !important;
   place-items: center;
   z-index: 40;
   padding: 1rem;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .truco-result.is-open {
-  display: grid;
+  display: grid !important;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .truco-result__box {
