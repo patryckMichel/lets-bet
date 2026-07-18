@@ -38,7 +38,7 @@ class TrucoEngine
 
     public function turnTimeoutSeconds(): int
     {
-        return max(5, min(120, (int) Setting::getValue('truco_turn_timeout_seconds', 20)));
+        return max(5, min(120, (int) Setting::getValue('truco_turn_timeout_seconds', 60)));
     }
 
     /** @return list<int|float> */
@@ -387,6 +387,11 @@ class TrucoEngine
             'my_seat' => $myIndex,
             'your_turn' => $yourTurn,
             'turn_deadline' => $match->turn_deadline?->toIso8601String(),
+            'turn_seconds_left' => $match->turn_deadline
+                ? max(0, $match->turn_deadline->getTimestamp() - time())
+                : null,
+            'turn_timeout_seconds' => $this->turnTimeoutSeconds(),
+            'forfeit_reason' => $state['forfeit_reason'] ?? null,
             'reactions' => $state['reactions'] ?? [],
             'seats' => $match->seats->sortBy('seat_index')->values()->map(fn (TrucoSeat $s) => [
                 'seat_index' => $s->seat_index,
@@ -484,8 +489,9 @@ class TrucoEngine
                 return;
             }
 
-            // Timeout = house wins
-            $this->settleMatch($match, $state, TrucoMatch::WINNER_THEM, 'Tempo esgotado.');
+            // Timeout = house wins (inatividade)
+            $state['forfeit_reason'] = 'inactivity';
+            $this->settleMatch($match, $state, TrucoMatch::WINNER_THEM, 'Você perdeu por inatividade.');
         });
     }
 

@@ -16,16 +16,36 @@
   const hubError = document.getElementById('truco-hub-error');
   const hub2v2 = document.getElementById('hub-2v2-extra');
   const leaveBtn = document.getElementById('btn-leave');
+  const timerEl = document.getElementById('truco-timer');
+  const timerValue = document.getElementById('truco-timer-value');
+  const felt = document.getElementById('truco-felt');
+  const deck = document.getElementById('truco-deck');
+  const fx = document.getElementById('truco-fx');
 
   let mode = '1v1';
   let stake = null;
   let matchId = null;
   let pollTimer = null;
+  let countdownTimer = null;
+  let turnDeadlineMs = null;
   let selectedCard = null;
   let lastHandKey = '';
+  let lastVira = '';
+  let lastRaise = null;
+  let lastMessage = '';
+  let lastScoreUs = null;
+  let lastScoreThem = null;
+  let lastTricksKey = '';
+  let lastTableLen = 0;
+  let animBusy = false;
 
   const suitSymbol = { clubs: '♣', hearts: '♥', spades: '♠', diamonds: '♦' };
   const isRed = (s) => s === 'hearts' || s === 'diamonds';
+  const raiseLabels = { 3: 'TRUCO!', 6: 'SEIS!', 9: 'NOVE!', 12: 'DOZE!' };
+
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
 
   function cardHtml(card, opts = {}) {
     if (!card) return '';
@@ -47,6 +67,132 @@
 
   function backHtml(n) {
     return Array.from({ length: Math.max(0, n) }, () => '<div class="truco-back"></div>').join('');
+  }
+
+  function formatTime(sec) {
+    const s = Math.max(0, Math.floor(sec));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}:${String(r).padStart(2, '0')}`;
+  }
+
+  function stopCountdown() {
+    if (countdownTimer) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+    turnDeadlineMs = null;
+    if (timerEl) {
+      timerEl.hidden = true;
+      timerEl.classList.remove('is-urgent');
+    }
+  }
+
+  function tickCountdown() {
+    if (!timerEl || !timerValue || !turnDeadlineMs) return;
+    const left = Math.max(0, Math.ceil((turnDeadlineMs - Date.now()) / 1000));
+    timerValue.textContent = formatTime(left);
+    timerEl.classList.toggle('is-urgent', left <= 10);
+    timerEl.hidden = false;
+    if (left <= 0) {
+      timerEl.classList.add('is-urgent');
+    }
+  }
+
+  function startCountdown(deadlineIso) {
+    if (!deadlineIso) {
+      stopCountdown();
+      return;
+    }
+    turnDeadlineMs = Date.parse(deadlineIso);
+    if (Number.isNaN(turnDeadlineMs)) {
+      stopCountdown();
+      return;
+    }
+    if (countdownTimer) clearInterval(countdownTimer);
+    tickCountdown();
+    countdownTimer = setInterval(tickCountdown, 250);
+  }
+
+  async function showFx(text, kind) {
+    if (!fx) return;
+    fx.textContent = text;
+    fx.className = `truco-fx is-show${kind ? ` is-${kind}` : ''}`;
+    await sleep(900);
+    fx.className = 'truco-fx';
+    fx.textContent = '';
+  }
+
+  async function flashFelt(kind) {
+    if (!felt) return;
+    felt.classList.remove('is-flash-raise', 'is-flash-accept', 'is-flash-run');
+    // reflow
+    void felt.offsetWidth;
+    felt.classList.add(`is-flash-${kind}`);
+    await sleep(500);
+    felt.classList.remove(`is-flash-${kind}`);
+  }
+
+  async function playDealSequence(data) {
+    if (animBusy) return;
+    animBusy = true;
+    try {
+      if (deck) {
+        deck.classList.add('is-visible', 'is-shuffle');
+        await sleep(600);
+        deck.classList.remove('is-shuffle');
+      }
+
+      const handEl = document.getElementById('my-hand');
+      if (handEl) {
+        handEl.querySelectorAll('.truco-card').forEach((el, i) => {
+          el.classList.add('is-fly-in');
+          el.style.animationDelay = `${i * 90}ms`;
+        });
+      }
+      ['backs-top', 'backs-left', 'backs-right'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.querySelectorAll('.truco-back').forEach((b, i) => {
+          b.style.animation = `cardDeal 0.4s ease ${i * 80}ms both`;
+        });
+      });
+      await sleep(450);
+
+      const vira = document.getElementById('vira-card');
+      const viraCard = vira?.querySelector('.truco-card');
+      if (viraCard) {
+        viraCard.classList.add('is-flip-in');
+      }
+      const man = document.getElementById('manilhas');
+      if (man) {
+        man.classList.add('is-reveal');
+        setTimeout(() => man.classList.remove('is-reveal'), 500);
+      }
+      await sleep(400);
+      if (deck) deck.classList.remove('is-visible');
+    } finally {
+      animBusy = false;
+    }
+  }
+
+  async function playRaiseFx(value) {
+    const label = raiseLabels[value] || `VALE ${value}!`;
+    await Promise.all([showFx(label, 'raise'), flashFelt('raise')]);
+  }
+
+  async function playAcceptFx() {
+    await Promise.all([showFx('ACEITO!', 'accept'), flashFelt('accept')]);
+  }
+
+  async function playRunFx() {
+    const played = document.getElementById('table-cards');
+    if (played) {
+      played.classList.add('is-recollect');
+      await sleep(400);
+      played.classList.remove('is-recollect');
+    }
+    await Promise.all([showFx('CORREU', 'run'), flashFelt('run')]);
   }
 
   stakes.forEach((s) => {
@@ -132,12 +278,21 @@
 
   function showHub() {
     stopPoll();
+    stopCountdown();
     matchId = null;
     hub.hidden = false;
     lobbyRoom.hidden = true;
     table.hidden = true;
     setResultOpen(false);
     if (leaveBtn) leaveBtn.hidden = true;
+    lastHandKey = '';
+    lastVira = '';
+    lastRaise = null;
+    lastMessage = '';
+    lastScoreUs = null;
+    lastScoreThem = null;
+    lastTricksKey = '';
+    lastTableLen = 0;
   }
 
   function showRoomLobby(data) {
@@ -145,6 +300,7 @@
     lobbyRoom.hidden = false;
     table.hidden = true;
     setResultOpen(false);
+    stopCountdown();
     if (leaveBtn) leaveBtn.hidden = true;
     document.getElementById('room-code').textContent = data.code || '—';
     const list = document.getElementById('room-seats');
@@ -200,8 +356,31 @@
     }
   }
 
-  function renderDots(el, count) {
-    el.innerHTML = [0, 1, 2].map((i) => `<span class="${i < count ? 'is-on' : ''}"></span>`).join('');
+  function renderDots(el, count, animate) {
+    const prev = el.querySelectorAll('span.is-on').length;
+    el.innerHTML = [0, 1, 2].map((i) => {
+      const on = i < count;
+      const pop = animate && on && i === count - 1 && count > prev;
+      return `<span class="${on ? 'is-on' : ''}${pop ? ' is-pop' : ''}"></span>`;
+    }).join('');
+  }
+
+  function maybeTriggerFx(data) {
+    const msg = (data.message || '').toLowerCase();
+    const raise = data.pending_raise || data.last_raise || null;
+
+    if (raise && raise !== lastRaise) {
+      playRaiseFx(raise);
+      lastRaise = raise;
+    } else if (!raise) {
+      lastRaise = null;
+    }
+
+    if (msg && msg !== lastMessage) {
+      if (msg.includes('aceito')) playAcceptFx();
+      if (msg.includes('correu') || msg.includes('correr')) playRunFx();
+      lastMessage = msg;
+    }
   }
 
   function render(data) {
@@ -222,13 +401,35 @@
     table.classList.toggle('mode-1v1', data.mode === '1v1');
     table.classList.toggle('mode-2v2', data.mode === '2v2');
 
-    document.getElementById('score-us').textContent = data.score_us;
-    document.getElementById('score-them').textContent = data.score_them;
+    if (data.status === 'playing' && data.turn_deadline) {
+      startCountdown(data.turn_deadline);
+    } else if (data.status !== 'playing') {
+      stopCountdown();
+    }
+
+    const scoreUsEl = document.getElementById('score-us');
+    const scoreThemEl = document.getElementById('score-them');
+    if (lastScoreUs !== null && data.score_us !== lastScoreUs) {
+      scoreUsEl.classList.add('is-bump');
+      setTimeout(() => scoreUsEl.classList.remove('is-bump'), 450);
+    }
+    if (lastScoreThem !== null && data.score_them !== lastScoreThem) {
+      scoreThemEl.classList.add('is-bump');
+      setTimeout(() => scoreThemEl.classList.remove('is-bump'), 450);
+    }
+    scoreUsEl.textContent = data.score_us;
+    scoreThemEl.textContent = data.score_them;
+    lastScoreUs = data.score_us;
+    lastScoreThem = data.score_them;
+
     document.getElementById('hand-value').textContent = data.hand_value;
 
     const tricks = data.tricks || { us: data.tricks_us || 0, them: data.tricks_them || 0 };
-    renderDots(document.getElementById('dots-us'), tricks.us || 0);
-    renderDots(document.getElementById('dots-them'), tricks.them || 0);
+    const tricksKey = `${tricks.us}-${tricks.them}`;
+    const tricksChanged = tricksKey !== lastTricksKey;
+    renderDots(document.getElementById('dots-us'), tricks.us || 0, tricksChanged);
+    renderDots(document.getElementById('dots-them'), tricks.them || 0, tricksChanged);
+    lastTricksKey = tricksKey;
 
     const map = seatMap(data);
     renderSeatAvatar(document.getElementById('avatar-me'), map.me, data.turn_seat);
@@ -241,15 +442,23 @@
     document.getElementById('backs-left').innerHTML = map.left ? backHtml(handCounts[map.left.seat_index] ?? 3) : '';
     document.getElementById('backs-right').innerHTML = map.right ? backHtml(handCounts[map.right.seat_index] ?? 3) : '';
 
-    document.getElementById('vira-card').innerHTML = data.vira ? cardHtml(data.vira, { sm: true }) : '';
+    const viraCode = data.vira?.code || '';
+    const viraChanged = viraCode && viraCode !== lastVira;
+    document.getElementById('vira-card').innerHTML = data.vira
+      ? cardHtml(data.vira, { sm: true, anim: viraChanged ? 'is-flip-in' : '' })
+      : '';
     document.getElementById('manilhas').innerHTML = (data.manilhas || []).map((c) => cardHtml(c, { sm: true })).join('');
-    document.getElementById('table-cards').innerHTML = (data.table || [])
-      .map((t) => cardHtml(t.card, { anim: 'is-play-anim' }))
+
+    const tableCards = data.table || [];
+    const playedAnim = tableCards.length > lastTableLen ? 'is-play-anim' : '';
+    document.getElementById('table-cards').innerHTML = tableCards
+      .map((t, i) => cardHtml(t.card, { anim: i === tableCards.length - 1 ? playedAnim : '' }))
       .join('');
+    lastTableLen = tableCards.length;
 
     const handKey = JSON.stringify(data.hand || []);
     const handEl = document.getElementById('my-hand');
-    const dealAnim = handKey !== lastHandKey && (data.hand || []).length === 3;
+    const newHand = handKey !== lastHandKey && (data.hand || []).length === 3;
     lastHandKey = handKey;
 
     const canPlay = data.your_turn && data.phase === 'play' && !data.pending_raise;
@@ -257,7 +466,7 @@
       cardHtml(c, {
         clickable: canPlay,
         selected: selectedCard === String(c.code),
-        anim: dealAnim ? 'is-fly-in' : '',
+        anim: newHand ? 'is-fly-in' : '',
       })
     ).join('');
 
@@ -270,28 +479,42 @@
       });
     });
 
+    if (newHand || (viraChanged && !lastVira)) {
+      playDealSequence(data);
+    }
+    if (viraCode) lastVira = viraCode;
+
     const msg = document.getElementById('truco-msg');
     if (data.message) {
       msg.textContent = data.message;
     } else if (data.last_raise) {
-      const labels = { 3: 'Truco!', 6: 'Seis!', 9: 'Nove!', 12: 'Doze!' };
-      msg.textContent = labels[data.last_raise] || `Vale ${data.last_raise}!`;
+      msg.textContent = raiseLabels[data.last_raise] || `Vale ${data.last_raise}!`;
     } else if (data.escuro) {
       msg.textContent = 'MÃO NO ESCURO';
     } else {
       msg.textContent = data.phase === 'waiting_raise' ? 'Aguardando resposta…' : '';
     }
 
+    maybeTriggerFx(data);
     renderActions(data);
 
     if (data.status === 'finished') {
       stopPoll();
+      stopCountdown();
       setResultOpen(true);
+      const inactivity = data.forfeit_reason === 'inactivity'
+        || (data.message || '').toLowerCase().includes('inatividade');
       const won = data.winner === 'us';
-      document.getElementById('result-title').textContent = won ? 'Vitória!' : 'Derrota';
-      document.getElementById('result-body').textContent = won
-        ? `Você recebeu R$ ${Number(data.payout || data.stake * 2).toFixed(2)}`
-        : `Stake R$ ${Number(data.stake).toFixed(2)} ficou com a casa.`;
+      if (inactivity) {
+        document.getElementById('result-title').textContent = 'Derrota por inatividade';
+        document.getElementById('result-body').textContent =
+          'Você não jogou a tempo (60s). O stake ficou com a casa.';
+      } else {
+        document.getElementById('result-title').textContent = won ? 'Vitória!' : 'Derrota';
+        document.getElementById('result-body').textContent = won
+          ? `Você recebeu R$ ${Number(data.payout || data.stake * 2).toFixed(2)}`
+          : `Stake R$ ${Number(data.stake).toFixed(2)} ficou com a casa.`;
+      }
     } else {
       setResultOpen(false);
     }
@@ -355,6 +578,10 @@
       if (a.t === 'raise') body.value = a.value;
       if (a.t === 'react') body.emoji = a.emoji;
 
+      if (a.t === 'raise') playRaiseFx(a.value || 3);
+      if (a.t === 'accept') playAcceptFx();
+      if (a.t === 'run' || a.t === 'mao11_run') playRunFx();
+
       const data = await api(`/api/truco/${matchId}/act`, body);
       selectedCard = null;
       render(data);
@@ -371,6 +598,13 @@
       matchId = data.match_id || data.id;
       selectedCard = null;
       lastHandKey = '';
+      lastVira = '';
+      lastRaise = null;
+      lastMessage = '';
+      lastScoreUs = null;
+      lastScoreThem = null;
+      lastTricksKey = '';
+      lastTableLen = 0;
       render(data);
       if (data.status === 'playing' || data.status === 'waiting') startPoll();
     } catch (e) {
@@ -401,6 +635,7 @@
       const data = await api(`/api/truco/${matchId}/start-room`, {});
       selectedCard = null;
       lastHandKey = '';
+      lastVira = '';
       render(data);
       startPoll();
     } catch (e) {
@@ -426,7 +661,6 @@
     showHub();
   });
 
-  // Ensure overlay starts closed (CSS display must not fight [hidden])
   setResultOpen(false);
 
   document.getElementById('emoji-bar').addEventListener('click', (e) => {

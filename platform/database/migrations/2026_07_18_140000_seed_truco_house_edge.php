@@ -9,7 +9,7 @@ return new class extends Migration
     {
         $rows = [
             ['key' => 'truco_house_edge', 'value' => '0.05'],
-            ['key' => 'truco_turn_timeout_seconds', 'value' => '20'],
+            ['key' => 'truco_turn_timeout_seconds', 'value' => '60'],
             ['key' => 'truco_fair_debug', 'value' => '0'],
         ];
 

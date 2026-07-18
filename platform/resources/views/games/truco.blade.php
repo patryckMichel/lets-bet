@@ -47,6 +47,10 @@
 
   <section id="truco-table" class="truco-table" hidden>
     <div class="truco-table-bar">
+      <div class="truco-timer" id="truco-timer" hidden>
+        <span class="truco-timer__label">Tempo</span>
+        <strong id="truco-timer-value">1:00</strong>
+      </div>
       <button type="button" class="truco-leave-btn" id="btn-leave" hidden>Sair da mesa</button>
     </div>
     <div class="truco-score">
@@ -63,7 +67,14 @@
       </div>
     </div>
 
-    <div class="truco-felt">
+    <div class="truco-felt" id="truco-felt">
+      <div class="truco-fx" id="truco-fx" aria-hidden="true"></div>
+      <div class="truco-deck" id="truco-deck" aria-hidden="true">
+        <div class="truco-deck__card"></div>
+        <div class="truco-deck__card"></div>
+        <div class="truco-deck__card"></div>
+      </div>
+
       <div class="truco-seat truco-seat--top" data-seat-slot="top">
         <div class="truco-avatar" id="avatar-top"><span class="truco-avatar__name">…</span><span class="truco-react" hidden></span></div>
         <div class="truco-backs" id="backs-top"></div>

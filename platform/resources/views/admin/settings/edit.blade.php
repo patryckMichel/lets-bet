@@ -37,7 +37,8 @@
             </div>
             <div class="col-md-6">
               <label class="form-label">Truco — timeout por jogada (s)</label>
-              <input type="number" min="5" max="120" name="truco_turn_timeout_seconds" value="{{ old('truco_turn_timeout_seconds', $settings['truco_turn_timeout_seconds'] ?? '20') }}" class="form-control" required>
+              <input type="number" min="5" max="120" name="truco_turn_timeout_seconds" value="{{ old('truco_turn_timeout_seconds', $settings['truco_turn_timeout_seconds'] ?? '60') }}" class="form-control" required>
+              <div class="form-text">Sem jogada nesse tempo = derrota por inatividade.</div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Max multiplier (Aviator)</label>
