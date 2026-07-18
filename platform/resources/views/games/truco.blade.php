@@ -63,21 +63,26 @@
       </div>
       <button type="button" class="truco-leave-btn" id="btn-leave" hidden>Sair da mesa</button>
     </div>
+
     <div class="truco-score">
       <div class="truco-score__side">
-        <span>nós</span>
+        <span class="truco-score__label">nós</span>
         <div class="truco-dots" id="dots-us"></div>
         <strong id="score-us">0</strong>
       </div>
-      <div class="truco-hand-val">vale <span id="hand-value">1</span></div>
+      <div class="truco-hand-val">
+        <span class="truco-hand-val__label">vale</span>
+        <strong id="hand-value">1</strong>
+      </div>
       <div class="truco-score__side truco-score__side--right">
-        <span>eles</span>
+        <span class="truco-score__label">eles</span>
         <div class="truco-dots" id="dots-them"></div>
         <strong id="score-them">0</strong>
       </div>
     </div>
 
     <div class="truco-felt" id="truco-felt">
+      <div class="truco-felt__shine" aria-hidden="true"></div>
       <div class="truco-fx" id="truco-fx" aria-hidden="true"></div>
       <div class="truco-deck" id="truco-deck" aria-hidden="true">
         <div class="truco-deck__card"></div>
@@ -99,13 +104,15 @@
       </div>
 
       <div class="truco-center">
-        <div class="truco-vira-box">
-          <span>Vira</span>
-          <div id="vira-card"></div>
-        </div>
-        <div class="truco-manilhas-box">
-          <span>MANILHAS</span>
-          <div id="manilhas" class="truco-manilhas__row"></div>
+        <div class="truco-center__meta">
+          <div class="truco-vira-box">
+            <span>Vira</span>
+            <div id="vira-card"></div>
+          </div>
+          <div class="truco-manilhas-box">
+            <span>Manilhas</span>
+            <div id="manilhas" class="truco-manilhas__row"></div>
+          </div>
         </div>
         <div class="truco-played" id="table-cards"></div>
         <p class="truco-toast" id="truco-msg"></p>
@@ -119,10 +126,10 @@
 
     <div class="truco-bottom-bar">
       <div class="truco-emojis" id="emoji-bar">
-        <button type="button" data-emoji="😀">😀</button>
-        <button type="button" data-emoji="😎">😎</button>
-        <button type="button" data-emoji="🔥">🔥</button>
-        <button type="button" data-emoji="😤">😤</button>
+        <button type="button" data-emoji="😀" aria-label="Reagir feliz">😀</button>
+        <button type="button" data-emoji="😎" aria-label="Reagir confiante">😎</button>
+        <button type="button" data-emoji="🔥" aria-label="Reagir fogo">🔥</button>
+        <button type="button" data-emoji="😤" aria-label="Reagir bravo">😤</button>
       </div>
       <div class="truco-actions-wrap">
         <p class="truco-ask" id="action-label">O que deseja fazer?</p>

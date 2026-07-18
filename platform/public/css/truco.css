@@ -34,60 +34,6 @@
   text-decoration: none;
 }
 
-.truco-table-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0 0.25rem 0.35rem;
-}
-
-.truco-timer {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  font-size: 0.85rem;
-}
-
-.truco-timer__label {
-  opacity: 0.75;
-  text-transform: uppercase;
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-}
-
-.truco-timer strong {
-  font-variant-numeric: tabular-nums;
-  min-width: 2.4rem;
-  color: var(--gold);
-}
-
-.truco-timer.is-urgent {
-  border-color: #ff6b6b;
-  animation: timerUrgent 0.8s ease infinite;
-}
-
-.truco-timer.is-urgent strong {
-  color: #ff8f8f;
-}
-
-.truco-leave-btn {
-  background: transparent;
-  border: 1px solid rgba(246, 200, 76, 0.35);
-  color: var(--gold);
-  border-radius: 999px;
-  padding: 0.35rem 0.85rem;
-  font: inherit;
-  font-size: 0.85rem;
-  cursor: pointer;
-  min-height: 36px;
-  margin-left: auto;
-}
-
 /* —— Hub —— */
 .truco-hub {
   max-width: 420px;
@@ -414,70 +360,202 @@
 
 /* —— Mesa —— */
 .truco-table {
-  max-width: 520px;
+  max-width: 440px;
   margin: 0 auto;
-  padding: 0.5rem 0.5rem 1rem;
+  padding: 0.4rem 0.75rem 1.25rem;
   position: relative;
+  animation: tableIn 0.45s ease;
+}
+
+@keyframes tableIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+.truco-table-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.1rem 0.45rem;
+}
+
+.truco-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(246, 200, 76, 0.35);
+  font-size: 0.85rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.truco-timer__label {
+  opacity: 0.75;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.truco-timer strong {
+  font-variant-numeric: tabular-nums;
+  min-width: 2.4rem;
+  color: var(--gold);
+  font-family: "Bricolage Grotesque", Georgia, serif;
+}
+
+.truco-timer.is-urgent {
+  border-color: #ff6b6b;
+  animation: timerUrgent 0.8s ease infinite;
+}
+
+.truco-timer.is-urgent strong {
+  color: #ff8f8f;
+}
+
+.truco-leave-btn {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(246, 200, 76, 0.4);
+  color: var(--gold);
+  border-radius: 999px;
+  padding: 0.4rem 0.95rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 38px;
+  margin-left: auto;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.truco-leave-btn:hover {
+  background: rgba(246, 200, 76, 0.12);
+  border-color: var(--gold);
+}
+
+.truco-leave-btn:active {
+  transform: scale(0.97);
 }
 
 .truco-score {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
-  margin-bottom: 0.25rem;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 0.55rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.22));
+  border: 1px solid rgba(246, 200, 76, 0.28);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
 }
 
 .truco-score__side {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
 
 .truco-score__side--right { justify-content: flex-end; }
 
+.truco-score__label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+  opacity: 0.75;
+  font-weight: 700;
+}
+
 .truco-score strong {
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   color: var(--gold);
   min-width: 1.4rem;
+  font-family: "Bricolage Grotesque", Georgia, serif;
+  line-height: 1;
 }
 
 .truco-dots {
   display: flex;
-  gap: 3px;
+  gap: 4px;
 }
 
 .truco-dots span {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
 }
 
 .truco-dots span.is-on {
   background: var(--gold);
   border-color: var(--gold);
+  box-shadow: 0 0 8px rgba(246, 200, 76, 0.55);
 }
 
 .truco-hand-val {
-  font-size: 0.75rem;
-  opacity: 0.85;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-width: 3.4rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 10px;
+  background: rgba(246, 200, 76, 0.12);
+  border: 1px solid rgba(246, 200, 76, 0.35);
   text-align: center;
+}
+
+.truco-hand-val__label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+  font-weight: 700;
+}
+
+.truco-hand-val strong {
+  font-size: 1.15rem;
+  color: var(--gold);
+  font-family: "Bricolage Grotesque", Georgia, serif;
+  line-height: 1;
 }
 
 .truco-felt {
   position: relative;
-  min-height: 420px;
-  border-radius: 18px;
+  min-height: 460px;
+  border-radius: 22px;
   background:
-    radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.06), transparent 55%),
-    linear-gradient(160deg, var(--felt-light), var(--felt) 40%, var(--felt-dark));
-  border: 3px solid rgba(246, 200, 76, 0.25);
-  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.35);
+    radial-gradient(ellipse at 50% 30%, rgba(246, 200, 76, 0.1), transparent 50%),
+    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 0.07), transparent 52%),
+    linear-gradient(165deg, #1f8058 0%, var(--felt) 38%, var(--felt-dark) 100%);
+  border: 2px solid rgba(246, 200, 76, 0.38);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.35),
+    inset 0 0 70px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   overflow: hidden;
+}
+
+.truco-felt__shine {
+  position: absolute;
+  inset: -20% 10% auto;
+  height: 45%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.12), transparent 70%);
+  pointer-events: none;
+  animation: feltShine 5s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes feltShine {
+  0%, 100% { opacity: 0.45; transform: translateY(0); }
+  50% { opacity: 0.85; transform: translateY(6px); }
 }
 
 .truco-felt.is-flash-raise {
@@ -532,6 +610,7 @@
   z-index: 8;
   font-size: clamp(1.6rem, 7vw, 2.4rem);
   font-weight: 900;
+  font-family: "Bricolage Grotesque", Georgia, serif;
   color: var(--gold);
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.65);
   opacity: 0;
@@ -572,41 +651,66 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.3rem;
+  z-index: 3;
 }
 
-.truco-seat--top { top: 0.5rem; left: 50%; transform: translateX(-50%); }
-.truco-seat--left { left: 0.35rem; top: 38%; }
-.truco-seat--right { right: 0.35rem; top: 38%; }
-.truco-seat--me { bottom: 0.35rem; left: 50%; transform: translateX(-50%); width: 92%; }
+.truco-seat--top { top: 0.65rem; left: 50%; transform: translateX(-50%); }
+.truco-seat--left { left: 0.4rem; top: 36%; }
+.truco-seat--right { right: 0.4rem; top: 36%; }
+.truco-seat--me {
+  bottom: 0.55rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 94%;
+  z-index: 4;
+}
 
 .truco-seat.is-hidden { display: none; }
 
 .truco-avatar {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: #1a1a1a;
-  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: linear-gradient(160deg, #2a2a2a, #121212);
+  border: 2px solid rgba(255, 255, 255, 0.28);
   display: grid;
   place-items: center;
   position: relative;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
+  font-weight: 700;
   text-align: center;
   padding: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
 }
 
 .truco-avatar.is-turn {
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(246, 200, 76, 0.35);
+  box-shadow: 0 0 0 3px rgba(246, 200, 76, 0.35), 0 0 18px rgba(246, 200, 76, 0.35);
+  animation: avatarTurn 1.4s ease infinite;
 }
 
-.truco-avatar.is-me { border-color: #3ecf7a; }
+.truco-avatar.is-me {
+  border-color: #3ecf7a;
+  box-shadow: 0 0 0 3px rgba(62, 207, 122, 0.28), 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.truco-avatar.is-me.is-turn {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(246, 200, 76, 0.4), 0 0 18px rgba(246, 200, 76, 0.4);
+}
+
 .truco-avatar__name {
   overflow: hidden;
-  max-width: 44px;
+  max-width: 46px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@keyframes avatarTurn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 .truco-react {
@@ -619,59 +723,96 @@
 
 .truco-backs {
   display: flex;
-  gap: 2px;
+  gap: 3px;
+  justify-content: center;
 }
 
 .truco-back {
-  width: 28px;
-  height: 40px;
-  border-radius: 4px;
-  background: linear-gradient(145deg, #c62828, #8b0000);
-  border: 1px solid #fff3;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  width: 30px;
+  height: 42px;
+  border-radius: 5px;
+  background:
+    repeating-linear-gradient(45deg, #9b1c1c 0 4px, #c62828 4px 8px),
+    linear-gradient(145deg, #c62828, #8b0000);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
 .truco-center {
   position: absolute;
-  inset: 22% 12% 28%;
+  inset: 18% 8% 26%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.55rem;
+  z-index: 2;
+}
+
+.truco-center__meta {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
 }
 
 .truco-vira-box,
 .truco-manilhas-box {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
   opacity: 0.95;
+  color: rgba(255, 231, 163, 0.9);
+}
+
+.truco-vira-box > span,
+.truco-manilhas-box > span {
+  display: block;
+  margin-bottom: 0.25rem;
 }
 
 .truco-manilhas__row,
 .truco-played,
 .truco-hand {
   display: flex;
-  gap: 0.35rem;
+  gap: 0.4rem;
   justify-content: center;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.truco-played {
+  min-height: 78px;
+  padding: 0.35rem 0.5rem;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px dashed rgba(246, 200, 76, 0.22);
+  width: min(100%, 280px);
+}
+
+.truco-hand {
+  margin-top: 0.15rem;
+  gap: 0.45rem;
 }
 
 .truco-card {
-  width: 52px;
-  height: 74px;
-  border-radius: 6px;
-  background: #f7f2e8;
+  width: 54px;
+  height: 76px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fffdf8, #f3ead8);
   color: #1a1a1a;
-  border: 1px solid #d0c8b8;
+  border: 1px solid #d4c9b4;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   font-size: 0.95rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28);
-  transition: transform 0.35s ease, box-shadow 0.2s;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.32);
+  transition: transform 0.28s ease, box-shadow 0.2s;
   cursor: default;
   user-select: none;
 }
@@ -679,12 +820,12 @@
 .truco-card.red { color: #c62828; }
 .truco-card.is-clickable { cursor: pointer; }
 .truco-card.is-clickable:hover {
-  transform: translateY(-8px) scale(1.04);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.42), 0 0 0 2px rgba(246, 200, 76, 0.45);
 }
 .truco-card.is-selected {
-  transform: translateY(-14px) scale(1.08);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.45), 0 0 0 3px var(--gold);
+  transform: translateY(-16px) scale(1.08);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.48), 0 0 0 3px var(--gold);
   outline: none;
 }
 
@@ -697,50 +838,74 @@
 }
 
 .truco-card.sm {
-  width: 36px;
-  height: 52px;
-  font-size: 0.75rem;
+  width: 34px;
+  height: 48px;
+  font-size: 0.7rem;
+  border-radius: 6px;
 }
 
 .truco-toast {
-  min-height: 1.2em;
+  min-height: 1.25em;
   margin: 0;
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 0.95rem;
   color: var(--gold);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
   animation: toastPulse 0.5s ease;
+  text-align: center;
 }
 
 .truco-bottom-bar {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0.5rem;
-  align-items: end;
-  margin-top: 0.5rem;
-  padding: 0 0.25rem;
+  gap: 0.65rem;
+  align-items: center;
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.26));
+  border: 1px solid rgba(246, 200, 76, 0.25);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
 }
 
 .truco-emojis {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.25rem;
+  gap: 0.3rem;
 }
 
 .truco-emojis button {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.25);
-  font-size: 1.2rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  border: 1px solid rgba(246, 200, 76, 0.22);
+  background: rgba(20, 60, 45, 0.85);
+  font-size: 1.15rem;
   cursor: pointer;
+  transition: transform 0.15s, border-color 0.2s, background 0.2s;
+}
+
+.truco-emojis button:hover {
+  border-color: rgba(246, 200, 76, 0.55);
+  background: rgba(246, 200, 76, 0.12);
+  transform: translateY(-2px);
+}
+
+.truco-emojis button:active {
+  transform: scale(0.94);
+}
+
+.truco-actions-wrap {
+  min-width: 0;
 }
 
 .truco-ask {
-  margin: 0 0 0.35rem;
-  font-size: 0.8rem;
-  opacity: 0.85;
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  opacity: 0.8;
   text-align: right;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .truco-actions {
@@ -752,18 +917,36 @@
 
 .truco-btn {
   border: none;
-  border-radius: 10px;
-  min-height: 44px;
-  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  min-height: 46px;
+  min-width: 5.5rem;
+  padding: 0.55rem 1.15rem;
   font-weight: 800;
+  font-size: 0.95rem;
   cursor: pointer;
   color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+  transition: transform 0.15s, filter 0.2s;
 }
 
-.truco-btn--run { background: var(--truco-blue); }
-.truco-btn--ok { background: var(--truco-green); }
+.truco-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.truco-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.truco-btn--run {
+  background: linear-gradient(180deg, #3d85c6, var(--truco-blue));
+}
+.truco-btn--ok {
+  background: linear-gradient(180deg, #3fbf58, var(--truco-green));
+}
 .truco-btn--raise {
-  background: var(--truco-orange);
+  background: linear-gradient(180deg, #ffd76a, var(--gold));
+  color: #1a1408;
   animation: raisePulse 1.2s ease infinite;
 }
 .truco-btn:disabled { opacity: 0.4; cursor: not-allowed; animation: none; }
@@ -880,18 +1063,18 @@
 }
 
 @keyframes feltRaiseFlash {
-  0%, 100% { box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.35); }
-  40% { box-shadow: inset 0 0 80px rgba(230, 122, 46, 0.45); }
+  0%, 100% { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), inset 0 0 70px rgba(0, 0, 0, 0.38); }
+  40% { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), inset 0 0 80px rgba(230, 122, 46, 0.45); }
 }
 
 @keyframes feltAcceptFlash {
-  0%, 100% { box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.35); }
-  40% { box-shadow: inset 0 0 80px rgba(47, 158, 68, 0.4); }
+  0%, 100% { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), inset 0 0 70px rgba(0, 0, 0, 0.38); }
+  40% { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), inset 0 0 80px rgba(47, 158, 68, 0.4); }
 }
 
 @keyframes feltRunFlash {
-  0%, 100% { box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.35); }
-  40% { box-shadow: inset 0 0 80px rgba(43, 108, 176, 0.4); }
+  0%, 100% { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), inset 0 0 70px rgba(0, 0, 0, 0.38); }
+  40% { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), inset 0 0 80px rgba(43, 108, 176, 0.4); }
 }
 
 @keyframes scoreBump {
@@ -911,8 +1094,8 @@
 }
 
 @keyframes raisePulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 122, 46, 0.5); }
-  50% { box-shadow: 0 0 0 6px rgba(230, 122, 46, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(246, 200, 76, 0.55); }
+  50% { box-shadow: 0 0 0 8px rgba(246, 200, 76, 0); }
 }
 
 @keyframes toastPulse {
@@ -929,6 +1112,8 @@
 
 @media (max-width: 420px) {
   .truco-stakes { grid-template-columns: repeat(4, 1fr); }
-  .truco-card { width: 46px; height: 66px; }
-  .truco-felt { min-height: 400px; }
+  .truco-card { width: 48px; height: 68px; }
+  .truco-felt { min-height: 430px; }
+  .truco-bottom-bar { padding: 0.55rem 0.55rem; gap: 0.5rem; }
+  .truco-emojis button { width: 40px; height: 40px; }
 }
