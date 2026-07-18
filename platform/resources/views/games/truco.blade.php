@@ -125,8 +125,7 @@
     <div class="truco-result__box">
       <h2 id="result-title">Fim</h2>
       <p id="result-body"></p>
-      <button type="button" class="truco-cta" id="result-again">Jogar de novo</button>
-      <a class="truco-link" href="{{ route('lobby') }}">Voltar ao lobby</a>
+      <p class="truco-result__hint" id="result-hint">Voltando em 10s…</p>
     </div>
   </div>
 </div>

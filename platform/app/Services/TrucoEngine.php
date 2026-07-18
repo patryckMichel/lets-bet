@@ -405,6 +405,7 @@ class TrucoEngine
             'is_host' => (int) $match->host_user_id === (int) $viewer->id,
             'can_start' => $match->status === TrucoMatch::STATUS_WAITING
                 && (int) $match->host_user_id === (int) $viewer->id,
+            'balance' => round((float) $viewer->fresh()->total_balance, 2),
         ];
     }
 

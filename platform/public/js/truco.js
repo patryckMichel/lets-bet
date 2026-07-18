@@ -39,6 +39,9 @@
   let lastTableLen = 0;
   let lastTrickWinner = null;
   let matchIntroPlayed = false;
+  let endHandled = false;
+  let endReturnTimer = null;
+  let endCountdownTimer = null;
   let animBusy = false;
 
   const suitSymbol = { clubs: '♣', hearts: '♥', spades: '♠', diamonds: '♦' };
@@ -292,9 +295,74 @@
     }
   }
 
+  function updateBalance(balance) {
+    if (balance === undefined || balance === null) return;
+    const el = document.getElementById('av-balance');
+    if (!el) return;
+    const n = Number(balance);
+    if (Number.isNaN(n)) return;
+    el.textContent = `$ ${n.toFixed(2)}`;
+  }
+
+  function clearEndTimers() {
+    if (endReturnTimer) {
+      clearTimeout(endReturnTimer);
+      endReturnTimer = null;
+    }
+    if (endCountdownTimer) {
+      clearInterval(endCountdownTimer);
+      endCountdownTimer = null;
+    }
+  }
+
+  function returnToHub() {
+    clearEndTimers();
+    setResultOpen(false);
+    // Same URL: /jogos/tigre-truco — refreshes balance and hub
+    window.location.href = window.location.pathname;
+  }
+
+  function showEndAndReturn(data) {
+    if (endHandled) return;
+    endHandled = true;
+    stopPoll();
+    stopCountdown();
+    updateBalance(data.balance);
+    setResultOpen(true);
+
+    const inactivity = data.forfeit_reason === 'inactivity'
+      || (data.message || '').toLowerCase().includes('não jogou a tempo')
+      || (data.message || '').toLowerCase().includes('inatividade');
+    const won = data.winner === 'us';
+    if (inactivity) {
+      document.getElementById('result-title').textContent = 'Derrota';
+      document.getElementById('result-body').textContent = 'Você não jogou a tempo (60s).';
+    } else {
+      document.getElementById('result-title').textContent = won ? 'Vitória!' : 'Derrota';
+      document.getElementById('result-body').textContent = won
+        ? `Você ganhou R$ ${Number(data.payout || data.stake * 2).toFixed(2).replace('.', ',')}`
+        : 'Você perdeu.';
+    }
+
+    const hint = document.getElementById('result-hint');
+    let left = 10;
+    if (hint) hint.textContent = `Voltando em ${left}s…`;
+    endCountdownTimer = setInterval(() => {
+      left -= 1;
+      if (hint) hint.textContent = `Voltando em ${Math.max(0, left)}s…`;
+      if (left <= 0 && endCountdownTimer) {
+        clearInterval(endCountdownTimer);
+        endCountdownTimer = null;
+      }
+    }, 1000);
+    endReturnTimer = setTimeout(returnToHub, 10000);
+  }
+
   function showHub() {
     stopPoll();
     stopCountdown();
+    clearEndTimers();
+    endHandled = false;
     matchId = null;
     hub.hidden = false;
     lobbyRoom.hidden = true;
@@ -528,23 +596,12 @@
     maybeTriggerFx(data);
     renderActions(data);
 
+    if (typeof data.balance === 'number') {
+      updateBalance(data.balance);
+    }
+
     if (data.status === 'finished') {
-      stopPoll();
-      stopCountdown();
-      setResultOpen(true);
-      const inactivity = data.forfeit_reason === 'inactivity'
-        || (data.message || '').toLowerCase().includes('não jogou a tempo')
-        || (data.message || '').toLowerCase().includes('inatividade');
-      const won = data.winner === 'us';
-      if (inactivity) {
-        document.getElementById('result-title').textContent = 'Derrota';
-        document.getElementById('result-body').textContent = 'Você não jogou a tempo (60s).';
-      } else {
-        document.getElementById('result-title').textContent = won ? 'Vitória!' : 'Derrota';
-        document.getElementById('result-body').textContent = won
-          ? `Você ganhou R$ ${Number(data.payout || data.stake * 2).toFixed(2).replace('.', ',')}`
-          : 'Você perdeu.';
-      }
+      showEndAndReturn(data);
     } else {
       setResultOpen(false);
     }
@@ -688,10 +745,6 @@
 
   if (leaveBtn) leaveBtn.addEventListener('click', leaveMatch);
   document.getElementById('btn-leave-room')?.addEventListener('click', leaveMatch);
-  document.getElementById('result-again').addEventListener('click', () => {
-    setResultOpen(false);
-    showHub();
-  });
 
   setResultOpen(false);
 

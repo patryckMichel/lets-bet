@@ -619,6 +619,11 @@
 .truco-result__box h2 { color: var(--gold); margin-top: 0; }
 .truco-result__box .truco-cta { margin: 1rem 0 0.75rem; }
 .truco-result__box .truco-link { display: inline-block; }
+.truco-result__hint {
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
 
 .mode-1v1 .truco-seat--left,
 .mode-1v1 .truco-seat--right {
