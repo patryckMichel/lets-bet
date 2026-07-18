@@ -118,13 +118,18 @@
     }, 1200);
   }
 
+  function setResultOpen(open) {
+    result.hidden = !open;
+    result.classList.toggle('is-open', !!open);
+  }
+
   function showHub() {
     stopPoll();
     matchId = null;
     hub.hidden = false;
     lobbyRoom.hidden = true;
     table.hidden = true;
-    result.hidden = true;
+    setResultOpen(false);
     leaveBtn.hidden = true;
   }
 
@@ -132,7 +137,7 @@
     hub.hidden = true;
     lobbyRoom.hidden = false;
     table.hidden = true;
-    result.hidden = true;
+    setResultOpen(false);
     leaveBtn.hidden = false;
     document.getElementById('room-code').textContent = data.code || '—';
     const list = document.getElementById('room-seats');
@@ -274,12 +279,14 @@
 
     if (data.status === 'finished') {
       stopPoll();
-      result.hidden = false;
+      setResultOpen(true);
       const won = data.winner === 'us';
       document.getElementById('result-title').textContent = won ? 'Vitória!' : 'Derrota';
       document.getElementById('result-body').textContent = won
         ? `Você recebeu R$ ${Number(data.payout || data.stake * 2).toFixed(2)}`
         : `Stake R$ ${Number(data.stake).toFixed(2)} ficou com a casa.`;
+    } else {
+      setResultOpen(false);
     }
   }
 
@@ -408,9 +415,12 @@
   leaveBtn.addEventListener('click', leaveMatch);
   document.getElementById('btn-leave-room').addEventListener('click', leaveMatch);
   document.getElementById('result-again').addEventListener('click', () => {
-    result.hidden = true;
+    setResultOpen(false);
     showHub();
   });
+
+  // Ensure overlay starts closed (CSS display must not fight [hidden])
+  setResultOpen(false);
 
   document.getElementById('emoji-bar').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-emoji]');

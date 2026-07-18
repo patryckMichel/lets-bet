@@ -11,6 +11,11 @@
   color: #f3f7f4;
 }
 
+/* display:* rules must not override the HTML hidden attribute */
+.page-truco [hidden] {
+  display: none !important;
+}
+
 .truco-top {
   display: flex;
   align-items: center;
@@ -447,10 +452,14 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.72);
-  display: grid;
+  display: none;
   place-items: center;
   z-index: 40;
   padding: 1rem;
+}
+
+.truco-result.is-open {
+  display: grid;
 }
 
 .truco-result__box {
