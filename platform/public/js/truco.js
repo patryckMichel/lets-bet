@@ -637,9 +637,8 @@
     const trickKey = lastTrick
       ? `${lastTrick.winner}|${(lastTrick.cards || []).map((c) => c.card?.code).join(',')}`
       : '';
-    const tricksChanged = tricksKey !== prevTricksKey && prevTricksKey !== '';
     const shouldAnimTrick = trickKey && trickKey !== lastTrickAnimKey
-      && (tricksChanged || handIdChanged || (tableCards.length === 0 && lastTrick));
+      && ((tricksChanged && prevTricksKey !== '') || handIdChanged || (tableCards.length === 0 && lastTrick));
 
     if (shouldAnimTrick) {
       lastTrickAnimKey = trickKey;
