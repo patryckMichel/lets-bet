@@ -29,6 +29,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/jogadores/{user}/afiliado', [PlayerAdminController::class, 'makeAffiliate'])->name('players.affiliate');
 
     Route::get('/afiliados', [AffiliateAdminController::class, 'index'])->name('affiliates.index');
+    Route::post('/afiliados/calcular-todos', [AffiliateAdminController::class, 'calculateAll'])->name('affiliates.calculate-all');
+    Route::post('/afiliados/confirmar-todos', [AffiliateAdminController::class, 'confirmAll'])->name('affiliates.confirm-all');
     Route::get('/afiliados/{affiliate}', [AffiliateAdminController::class, 'show'])->name('affiliates.show');
     Route::put('/afiliados/{affiliate}', [AffiliateAdminController::class, 'update'])->name('affiliates.update');
     Route::post('/afiliados/{affiliate}/calcular', [AffiliateAdminController::class, 'calculate'])->name('affiliates.calculate');

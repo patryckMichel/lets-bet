@@ -179,6 +179,109 @@ class AffiliateCommissionService
     }
 
     /**
+     * Preview open commissions for every active affiliate in the period.
+     *
+     * @return array{
+     *   rows: list<array{affiliate: Affiliate, total: float, count: int, deposits_sum: float, can_confirm: bool, skip_reason: ?string}>,
+     *   confirmable_total: float,
+     *   confirmable_count: int,
+     *   affiliates_with_amount: int
+     * }
+     */
+    public function previewAll(CarbonInterface $from, CarbonInterface $to): array
+    {
+        $affiliates = Affiliate::query()
+            ->with('user')
+            ->where('active', true)
+            ->orderBy('id')
+            ->get();
+
+        $rows = [];
+        $confirmableTotal = 0.0;
+        $confirmableCount = 0;
+        $withAmount = 0;
+
+        foreach ($affiliates as $affiliate) {
+            $preview = $this->previewPeriod($affiliate, $from, $to);
+            $total = (float) $preview['total'];
+            $count = (int) $preview['count'];
+            $skipReason = null;
+            $canConfirm = false;
+
+            if ($count === 0 || $total <= 0) {
+                $skipReason = 'Sem depósitos elegíveis no período';
+            } elseif (! $affiliate->hasPixKey()) {
+                $skipReason = 'Sem chave PIX';
+                $withAmount++;
+            } else {
+                $canConfirm = true;
+                $withAmount++;
+                $confirmableTotal += $total;
+                $confirmableCount++;
+            }
+
+            $rows[] = [
+                'affiliate' => $affiliate,
+                'total' => $total,
+                'count' => $count,
+                'deposits_sum' => (float) $preview['deposits_sum'],
+                'can_confirm' => $canConfirm,
+                'skip_reason' => $skipReason,
+            ];
+        }
+
+        return [
+            'rows' => $rows,
+            'confirmable_total' => round($confirmableTotal, 2),
+            'confirmable_count' => $confirmableCount,
+            'affiliates_with_amount' => $withAmount,
+        ];
+    }
+
+    /**
+     * Confirm commissions for all active affiliates that have PIX + open amount in period.
+     *
+     * @return array{created: list<array{affiliate_id: int, withdrawal_id: int, amount: float}>, skipped: list<array{affiliate_id: int, reason: string}>}
+     */
+    public function confirmAll(
+        CarbonInterface $from,
+        CarbonInterface $to,
+        ?User $admin = null,
+    ): array {
+        $affiliates = Affiliate::query()
+            ->with('user')
+            ->where('active', true)
+            ->orderBy('id')
+            ->get();
+
+        $created = [];
+        $skipped = [];
+
+        foreach ($affiliates as $affiliate) {
+            if (! $affiliate->hasPixKey()) {
+                $skipped[] = ['affiliate_id' => $affiliate->id, 'reason' => 'Sem chave PIX'];
+                continue;
+            }
+
+            try {
+                $withdrawal = $this->confirmPeriod($affiliate, $from, $to, $admin);
+                $created[] = [
+                    'affiliate_id' => $affiliate->id,
+                    'withdrawal_id' => $withdrawal->id,
+                    'amount' => (float) $withdrawal->amount,
+                ];
+            } catch (RuntimeException $e) {
+                $skipped[] = [
+                    'affiliate_id' => $affiliate->id,
+                    'reason' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return compact('created', 'skipped');
+    }
+
+    /**
      * Confirm preview: reserve commissions and create withdrawal in /admin/saques.
      */
     public function confirmPeriod(

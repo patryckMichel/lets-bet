@@ -19,7 +19,7 @@ use RuntimeException;
 
 class AffiliateAdminController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $affiliates = Affiliate::query()
             ->with('user')
@@ -27,7 +27,21 @@ class AffiliateAdminController extends Controller
             ->orderByDesc('id')
             ->paginate(30);
 
-        return view('admin.affiliates.index', compact('affiliates'));
+        $bulkPreview = null;
+        $from = $request->query('from');
+        $to = $request->query('to');
+        if ($request->boolean('calc_all') && $from && $to) {
+            try {
+                $bulkPreview = app(AffiliateCommissionService::class)->previewAll(
+                    Carbon::parse($from),
+                    Carbon::parse($to),
+                );
+            } catch (\Throwable $e) {
+                session()->flash('error', $e->getMessage());
+            }
+        }
+
+        return view('admin.affiliates.index', compact('affiliates', 'bulkPreview', 'from', 'to'));
     }
 
     public function show(Request $request, Affiliate $affiliate): View
@@ -117,6 +131,66 @@ class AffiliateAdminController extends Controller
             'from' => $data['from'],
             'to' => $data['to'],
         ]);
+    }
+
+    public function calculateAll(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'from' => ['required', 'date'],
+            'to' => ['required', 'date', 'after_or_equal:from'],
+        ]);
+
+        return redirect()->route('admin.affiliates.index', [
+            'calc_all' => 1,
+            'from' => $data['from'],
+            'to' => $data['to'],
+        ]);
+    }
+
+    public function confirmAll(
+        Request $request,
+        AffiliateCommissionService $commissions,
+        AdminLogger $logger,
+    ): RedirectResponse {
+        $data = $request->validate([
+            'from' => ['required', 'date'],
+            'to' => ['required', 'date', 'after_or_equal:from'],
+        ]);
+
+        $result = $commissions->confirmAll(
+            Carbon::parse($data['from']),
+            Carbon::parse($data['to']),
+            $request->user(),
+        );
+
+        $logger->record($request->user(), 'affiliate.commission_confirmed_all', null, null, [
+            'from' => $data['from'],
+            'to' => $data['to'],
+            'created' => $result['created'],
+            'skipped_count' => count($result['skipped']),
+        ]);
+
+        $createdCount = count($result['created']);
+        $totalAmount = round(array_sum(array_column($result['created'], 'amount')), 2);
+
+        if ($createdCount === 0) {
+            return redirect()
+                ->route('admin.affiliates.index', [
+                    'calc_all' => 1,
+                    'from' => $data['from'],
+                    'to' => $data['to'],
+                ])
+                ->withErrors(['commission' => 'Nenhum saque gerado. Verifique PIX e depósitos no período.']);
+        }
+
+        return redirect()
+            ->route('admin.withdrawals.index')
+            ->with('status', sprintf(
+                '%d saque(s) de comissão gerados (R$ %s). %d afiliado(s) ignorados.',
+                $createdCount,
+                number_format($totalAmount, 2, ',', '.'),
+                count($result['skipped'])
+            ));
     }
 
     public function confirmCommission(
