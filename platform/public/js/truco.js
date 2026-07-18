@@ -137,7 +137,7 @@
     lobbyRoom.hidden = true;
     table.hidden = true;
     setResultOpen(false);
-    leaveBtn.hidden = true;
+    if (leaveBtn) leaveBtn.hidden = true;
   }
 
   function showRoomLobby(data) {
@@ -145,7 +145,7 @@
     lobbyRoom.hidden = false;
     table.hidden = true;
     setResultOpen(false);
-    leaveBtn.hidden = false;
+    if (leaveBtn) leaveBtn.hidden = true;
     document.getElementById('room-code').textContent = data.code || '—';
     const list = document.getElementById('room-seats');
     list.innerHTML = (data.seats || []).map((s) => {
@@ -218,7 +218,7 @@
     hub.hidden = true;
     lobbyRoom.hidden = true;
     table.hidden = false;
-    leaveBtn.hidden = false;
+    if (leaveBtn) leaveBtn.hidden = false;
     table.classList.toggle('mode-1v1', data.mode === '1v1');
     table.classList.toggle('mode-2v2', data.mode === '2v2');
 
@@ -419,8 +419,8 @@
     showHub();
   }
 
-  leaveBtn.addEventListener('click', leaveMatch);
-  document.getElementById('btn-leave-room').addEventListener('click', leaveMatch);
+  if (leaveBtn) leaveBtn.addEventListener('click', leaveMatch);
+  document.getElementById('btn-leave-room')?.addEventListener('click', leaveMatch);
   document.getElementById('result-again').addEventListener('click', () => {
     setResultOpen(false);
     showHub();

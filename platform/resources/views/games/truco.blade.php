@@ -10,12 +10,6 @@
      data-csrf="{{ csrf_token() }}"
      data-stakes='@json($stakes)'>
 
-  <header class="truco-top">
-    <a href="{{ route('lobby') }}" class="truco-back">← Lobby</a>
-    <strong>Tigre do Truco</strong>
-    <button type="button" class="truco-menu-btn" id="btn-leave" hidden>Sair</button>
-  </header>
-
   <section id="truco-hub" class="truco-hub">
     <img class="truco-hub__art" src="{{ asset('images/games/tigre-truco.png') }}" alt="Tigre do Truco">
     <h1>Tigre do Truco</h1>
@@ -52,6 +46,9 @@
   </section>
 
   <section id="truco-table" class="truco-table" hidden>
+    <div class="truco-table-bar">
+      <button type="button" class="truco-leave-btn" id="btn-leave" hidden>Sair da mesa</button>
+    </div>
     <div class="truco-score">
       <div class="truco-score__side">
         <span>nós</span>

@@ -16,23 +16,27 @@
   display: none !important;
 }
 
-.truco-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(246, 200, 76, 0.2);
-}
-
-.truco-back,
-.truco-link,
-.truco-menu-btn {
+.truco-link {
   color: var(--gold);
   text-decoration: none;
-  background: none;
-  border: none;
+}
+
+.truco-table-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 0.25rem 0.35rem;
+}
+
+.truco-leave-btn {
+  background: transparent;
+  border: 1px solid rgba(246, 200, 76, 0.35);
+  color: var(--gold);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
   font: inherit;
+  font-size: 0.85rem;
   cursor: pointer;
+  min-height: 36px;
 }
 
 .truco-hub {
