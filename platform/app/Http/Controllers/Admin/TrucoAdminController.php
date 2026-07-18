@@ -51,7 +51,7 @@ class TrucoAdminController extends Controller
             ->get();
 
         $edge = (float) Setting::getValue('truco_house_edge', 0.05);
-        $theoreticalWinrateHouse = 0.5 + ($edge / 2);
+        $theoreticalWinrateHouse = 0.5 + $edge;
 
         return view('admin.truco.index', [
             'total' => $total,

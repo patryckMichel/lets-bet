@@ -47,6 +47,9 @@
   let animQueue = Promise.resolve();
   let skipPlayCodes = new Set();
   let flownTableCodes = new Set();
+  let uiLocked = false;
+  let animPending = 0;
+  let lastData = null;
 
   const suitSymbol = { clubs: '♣', hearts: '♥', spades: '♠', diamonds: '♦' };
   const isRed = (s) => s === 'hearts' || s === 'diamonds';
@@ -57,8 +60,64 @@
   }
 
   function enqueueAnim(fn) {
-    animQueue = animQueue.then(() => fn()).catch(() => {});
+    animPending += 1;
+    setUiLocked(true);
+    animQueue = animQueue
+      .then(() => fn())
+      .catch(() => {})
+      .finally(() => {
+        animPending = Math.max(0, animPending - 1);
+        if (animPending === 0) {
+          setUiLocked(false);
+        }
+      });
     return animQueue;
+  }
+
+  function setUiLocked(locked) {
+    uiLocked = locked;
+    table?.classList.toggle('is-animating', locked);
+    if (locked) {
+      const handEl = document.getElementById('my-hand');
+      handEl?.querySelectorAll('.truco-card').forEach((el) => {
+        el.classList.remove('is-clickable', 'is-selected');
+        el.disabled = true;
+      });
+      const box = document.getElementById('truco-actions');
+      const label = document.getElementById('action-label');
+      if (box) {
+        box.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+      }
+      if (label) label.textContent = 'Aguarde…';
+      selectedCard = null;
+      return;
+    }
+    if (lastData) applyInteractability(lastData);
+  }
+
+  function applyInteractability(data) {
+    if (!data || uiLocked || data.status === 'finished') return;
+    const canPlay = data.your_turn && data.phase === 'play' && !data.pending_raise;
+    const handEl = document.getElementById('my-hand');
+    if (handEl) {
+      handEl.querySelectorAll('.truco-card').forEach((btn) => {
+        if (canPlay) {
+          btn.classList.add('is-clickable');
+          btn.disabled = false;
+          btn.onclick = () => {
+            selectedCard = btn.dataset.code;
+            handEl.querySelectorAll('.truco-card').forEach((x) => x.classList.remove('is-selected'));
+            btn.classList.add('is-selected');
+            renderActions(data);
+          };
+        } else {
+          btn.classList.remove('is-clickable', 'is-selected');
+          btn.disabled = true;
+          btn.onclick = null;
+        }
+      });
+    }
+    renderActions(data);
   }
 
   function cardHtml(card, opts = {}) {
@@ -132,7 +191,7 @@
     if (!fx) return;
     fx.textContent = text;
     fx.className = `truco-fx is-show${kind ? ` is-${kind}` : ''}`;
-    await sleep(900);
+    await sleep(1300);
     fx.className = 'truco-fx';
     fx.textContent = '';
   }
@@ -189,7 +248,7 @@
     clone.style.height = `${destH}px`;
     clone.style.transform = `translate(${dx}px, ${dy}px)`;
     clone.classList.add('is-flying');
-    await sleep(400);
+    await sleep(550);
     clone.remove();
   }
 
@@ -198,12 +257,13 @@
     if (isStart) {
       await showFx('Jogo iniciado!', 'accept');
     } else {
+      await sleep(600);
       await showFx('Nova mão', 'accept');
-      await sleep(150);
+      await sleep(200);
     }
     if (deck) {
       deck.classList.add('is-visible', 'is-shuffle');
-      await sleep(650);
+      await sleep(900);
       deck.classList.remove('is-shuffle');
     }
 
@@ -211,17 +271,17 @@
     if (handEl) {
       handEl.querySelectorAll('.truco-card').forEach((el, i) => {
         el.classList.add('is-fly-in');
-        el.style.animationDelay = `${i * 100}ms`;
+        el.style.animationDelay = `${i * 140}ms`;
       });
     }
     ['backs-top', 'backs-left', 'backs-right'].forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
       el.querySelectorAll('.truco-back').forEach((b, i) => {
-        b.style.animation = `cardDeal 0.4s ease ${i * 90}ms both`;
+        b.style.animation = `cardDeal 0.45s ease ${i * 120}ms both`;
       });
     });
-    await sleep(500);
+    await sleep(700);
 
     const vira = document.getElementById('vira-card');
     const viraCard = vira?.querySelector('.truco-card');
@@ -231,9 +291,9 @@
     const man = document.getElementById('manilhas');
     if (man) {
       man.classList.add('is-reveal');
-      setTimeout(() => man.classList.remove('is-reveal'), 500);
+      setTimeout(() => man.classList.remove('is-reveal'), 600);
     }
-    await sleep(450);
+    await sleep(600);
     if (deck) deck.classList.remove('is-visible');
   }
 
@@ -242,15 +302,15 @@
     if (played && Array.isArray(cards) && cards.length) {
       played.innerHTML = cards.map((t) => cardHtml(t.card, {})).join('');
       played.classList.add('is-trick-win');
-      await sleep(700);
+      await sleep(1000);
       played.classList.remove('is-trick-win');
       played.classList.add('is-recollect');
-      await sleep(380);
+      await sleep(500);
       played.classList.remove('is-recollect');
       played.innerHTML = '';
     } else if (played) {
       played.classList.add('is-trick-win');
-      await sleep(500);
+      await sleep(700);
       played.classList.remove('is-trick-win');
     }
     const label = winner === 'us' ? 'Nós!' : 'Eles!';
@@ -533,6 +593,7 @@
 
   function render(data) {
     if (!data) return;
+    lastData = data;
     matchId = data.match_id || data.id || matchId;
     window.__trucoReactions = data.reactions || {};
 
@@ -668,7 +729,7 @@
       && data.score_us === 0 && data.score_them === 0;
     lastHandKey = handKey;
 
-    const canPlay = data.your_turn && data.phase === 'play' && !data.pending_raise;
+    const canPlay = data.your_turn && data.phase === 'play' && !data.pending_raise && !uiLocked;
     const dealSoon = newHand || handIdChanged || (viraChanged && !lastVira);
     handEl.innerHTML = (data.hand || []).map((c) =>
       cardHtml(c, {
@@ -680,6 +741,7 @@
 
     handEl.querySelectorAll('.truco-card.is-clickable').forEach((btn) => {
       btn.addEventListener('click', () => {
+        if (uiLocked) return;
         selectedCard = btn.dataset.code;
         handEl.querySelectorAll('.truco-card').forEach((x) => x.classList.remove('is-selected'));
         btn.classList.add('is-selected');
@@ -693,10 +755,9 @@
       flownTableCodes.clear();
       skipPlayCodes.clear();
       enqueueAnim(async () => {
-        // re-aplica cartas com animação de deal após shuffle
         handEl.querySelectorAll('.truco-card').forEach((el, i) => {
           el.classList.add('is-fly-in');
-          el.style.animationDelay = `${i * 100}ms`;
+          el.style.animationDelay = `${i * 140}ms`;
         });
         await playDealSequence(data, { isStart: start });
       });
@@ -735,6 +796,11 @@
     box.innerHTML = '';
     if (data.status === 'finished') {
       label.textContent = '';
+      return;
+    }
+
+    if (uiLocked) {
+      label.textContent = 'Aguarde…';
       return;
     }
 
@@ -779,6 +845,8 @@
 
   async function doAct(a) {
     try {
+      if (uiLocked && a.t !== 'react') return;
+
       const body = { action: a.t };
       if (a.t === 'play') {
         if (selectedCard === null || selectedCard === undefined) return;
@@ -796,13 +864,11 @@
         const handEl = document.getElementById('my-hand');
         const src = handEl?.querySelector(`.truco-card[data-code="${code}"]`);
         const tableEl = document.getElementById('table-cards');
-        const rankEl = src?.querySelector('span');
         const cardApprox = {
           code,
-          rank: rankEl?.textContent || '?',
-          suit: src?.classList.contains('red') ? 'hearts' : 'clubs',
+          rank: '?',
+          suit: 'clubs',
         };
-        // tenta ler naipe do segundo span
         const spans = src?.querySelectorAll('span');
         if (spans && spans.length >= 2) {
           const sym = spans[1].textContent;

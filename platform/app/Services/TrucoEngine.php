@@ -33,7 +33,7 @@ class TrucoEngine
 
     public function houseEdge(): float
     {
-        return max(0, min(0.5, (float) Setting::getValue('truco_house_edge', 0.05)));
+        return max(0, min(0.5, (float) Setting::getValue('truco_house_edge', 0.12)));
     }
 
     public function turnTimeoutSeconds(): int
@@ -941,8 +941,8 @@ class TrucoEngine
 
         if ($phase === 'truco_pending' && ($state['pending_truco']['to'] ?? null) === 'them') {
             $wantWin = $match->target_winner === TrucoMatch::WINNER_THEM;
-            $accept = $wantWin ? mt_rand(1, 100) <= 70 : mt_rand(1, 100) <= 45;
-            if ($accept && $this->nextHandValue((int) $state['pending_truco']['value']) !== null && mt_rand(1, 100) <= 20) {
+            $accept = $wantWin ? mt_rand(1, 100) <= 80 : mt_rand(1, 100) <= 30;
+            if ($accept && $wantWin && $this->nextHandValue((int) $state['pending_truco']['value']) !== null && mt_rand(1, 100) <= 25) {
                 $this->requestRaise($match, $state, 'them');
 
                 return;
@@ -954,7 +954,9 @@ class TrucoEngine
         }
 
         if ($phase === 'play' && ($state['turn'] ?? '') === 'them') {
-            if (! ($state['escuro'] ?? false) && (int) $match->hand_value < 12 && mt_rand(1, 100) <= 15) {
+            $wantWin = $match->target_winner === TrucoMatch::WINNER_THEM;
+            $raiseChance = $wantWin ? 22 : 8;
+            if (! ($state['escuro'] ?? false) && (int) $match->hand_value < 12 && mt_rand(1, 100) <= $raiseChance) {
                 try {
                     $this->requestRaise($match, $state, 'them');
 
@@ -966,9 +968,7 @@ class TrucoEngine
             if ($hand === []) {
                 return;
             }
-            $card = ($state['escuro'] ?? false)
-                ? (string) array_rand($hand)
-                : $hand[array_rand($hand)];
+            $card = $this->pickGhostCard($hand, $state, $wantWin);
             $this->playCard1v1($match, $state, 'them', $card);
             $match->refresh();
             if (($match->state['turn'] ?? '') === 'them' && ($match->state['phase'] ?? '') === 'play') {
@@ -988,7 +988,7 @@ class TrucoEngine
 
         if ($phase === 'truco_pending' && ($state['pending_truco']['to'] ?? null) === 'them') {
             $wantWin = $match->target_winner === TrucoMatch::WINNER_THEM;
-            $accept = $wantWin ? mt_rand(1, 100) <= 70 : mt_rand(1, 100) <= 45;
+            $accept = $wantWin ? mt_rand(1, 100) <= 80 : mt_rand(1, 100) <= 30;
             $this->respondRaise($match, $state, 'them', $accept);
             $this->ghostTick2v2($match->fresh());
 
@@ -1011,7 +1011,9 @@ class TrucoEngine
         if ($hand === []) {
             return;
         }
-        if (! ($state['escuro'] ?? false) && (int) $match->hand_value < 12 && mt_rand(1, 100) <= 12) {
+        $wantWin = $match->target_winner === TrucoMatch::WINNER_THEM;
+        $raiseChance = $wantWin ? 18 : 6;
+        if (! ($state['escuro'] ?? false) && (int) $match->hand_value < 12 && mt_rand(1, 100) <= $raiseChance) {
             try {
                 $this->requestRaise($match, $state, $seat->team);
 
@@ -1019,9 +1021,7 @@ class TrucoEngine
             } catch (RuntimeException) {
             }
         }
-        $card = ($state['escuro'] ?? false)
-            ? (string) array_rand($hand)
-            : $hand[array_rand($hand)];
+        $card = $this->pickGhostCard($hand, $state, $wantWin);
         $this->playCard2v2($match, $state, $turnSeat, $card);
         $match->refresh();
         $this->ghostTick2v2($match);
@@ -1052,7 +1052,7 @@ class TrucoEngine
         // Rival em 11: fantasma decide jogar (vale 3) ou correr (cede 1).
         if ($mao11Them && ! $escuro) {
             $wantWin = $match->target_winner === TrucoMatch::WINNER_THEM;
-            if ($wantWin || mt_rand(1, 100) <= 55) {
+            if ($wantWin || mt_rand(1, 100) <= 25) {
                 $match->hand_value = 3;
                 $mao11Us = false;
                 $phase = 'play';
@@ -1113,7 +1113,7 @@ class TrucoEngine
         if ($match->mode === TrucoMatch::MODE_1V1) {
             $handUs = array_splice($deck, 0, 3);
             $handThem = array_splice($deck, 0, 3);
-            if ($match->target_winner === TrucoMatch::WINNER_THEM && mt_rand(1, 100) <= 55) {
+            if ($match->target_winner === TrucoMatch::WINNER_THEM && mt_rand(1, 100) <= 75) {
                 [$handUs, $handThem] = [$handThem, $handUs];
             }
 
@@ -1130,7 +1130,7 @@ class TrucoEngine
             '2' => array_splice($deck, 0, 3),
             '3' => array_splice($deck, 0, 3),
         ];
-        if ($match->target_winner === TrucoMatch::WINNER_THEM && mt_rand(1, 100) <= 50) {
+        if ($match->target_winner === TrucoMatch::WINNER_THEM && mt_rand(1, 100) <= 70) {
             [$hands['0'], $hands['1']] = [$hands['1'], $hands['0']];
             [$hands['2'], $hands['3']] = [$hands['3'], $hands['2']];
         }
@@ -1160,7 +1160,7 @@ class TrucoEngine
             $edge = 0.0;
         }
         $roll = mt_rand() / mt_getrandmax();
-        $playerWinChance = max(0.01, min(0.99, 0.5 - ($edge / 2)));
+        $playerWinChance = max(0.05, min(0.95, 0.5 - $edge));
         $target = $roll < $playerWinChance ? TrucoMatch::WINNER_US : TrucoMatch::WINNER_THEM;
 
         return [$target, $roll, $edge];
@@ -1281,6 +1281,60 @@ class TrucoEngine
         }
 
         return $sa > $sb ? 1 : -1;
+    }
+
+    /**
+     * Escolhe carta do fantasma com intenção (bate mesa se quer ganhar; evita se quer perder).
+     *
+     * @param  list<string>  $hand
+     * @param  array<string, mixed>  $state
+     */
+    protected function pickGhostCard(array $hand, array $state, bool $wantWin): string
+    {
+        $hand = array_values($hand);
+        if ($hand === []) {
+            throw new RuntimeException('Mão vazia.');
+        }
+        if (($state['escuro'] ?? false) || count($hand) === 1) {
+            return $hand[array_rand($hand)];
+        }
+
+        $manilha = (string) ($state['manilha_rank'] ?? '');
+        usort($hand, fn (string $a, string $b) => $this->compareCards($a, $b, $manilha));
+
+        $table = $state['table'] ?? [];
+        $bestOnTable = null;
+        foreach ($table as $play) {
+            $code = is_array($play['card'] ?? null) ? ($play['card']['code'] ?? null) : ($play['card'] ?? null);
+            if (! is_string($code) || $code === '') {
+                continue;
+            }
+            if ($bestOnTable === null || $this->compareCards($code, $bestOnTable, $manilha) > 0) {
+                $bestOnTable = $code;
+            }
+        }
+
+        if ($bestOnTable === null) {
+            // Lidera: quer ganhar → joga médio/fraco; quer perder → joga a mais fraca
+            return $wantWin ? $hand[min(1, count($hand) - 1)] : $hand[0];
+        }
+
+        $beaters = array_values(array_filter(
+            $hand,
+            fn (string $c) => $this->compareCards($c, $bestOnTable, $manilha) > 0
+        ));
+        $losers = array_values(array_filter(
+            $hand,
+            fn (string $c) => $this->compareCards($c, $bestOnTable, $manilha) <= 0
+        ));
+
+        if ($wantWin) {
+            // Mais fraca que ainda bate; senão a mais fraca (corta perdas)
+            return $beaters[0] ?? $hand[0];
+        }
+
+        // Quer que o jogador ganhe: não bate se puder; senão a mais fraca
+        return $losers[0] ?? $hand[0];
     }
 
     protected function cardStrength(string $card, string $manilhaRank): int
