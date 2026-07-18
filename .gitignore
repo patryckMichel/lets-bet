@@ -43,6 +43,8 @@ Thumbs.db
 # Log files
 *.log
 logs/
+!platform/resources/views/admin/logs/
+!platform/resources/views/admin/logs/**
 
 # Database files
 *.db
