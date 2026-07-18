@@ -34,7 +34,6 @@ class AffiliateFraudService
         $ownerIps = array_filter([
             (string) ($owner->registration_ip ?? ''),
             (string) ($owner->last_ip ?? ''),
-            (string) ($owner->ip_address ?? ''),
         ]);
 
         if (in_array($ip, $ownerIps, true)) {

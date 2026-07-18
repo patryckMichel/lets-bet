@@ -47,7 +47,6 @@ class LoginController extends Controller
         $ops->startSession($user);
 
         $user->last_ip = $request->ip();
-        $user->ip_address = $request->ip();
         $user->save();
 
         if ($user->is_admin) {

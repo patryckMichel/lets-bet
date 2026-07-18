@@ -125,7 +125,6 @@ class RegisterController extends Controller
                     'affiliate_id' => $affiliateId,
                     'registration_ip' => $ip,
                     'last_ip' => $ip,
-                    'ip_address' => $ip,
                 ]);
 
                 if ($affiliateId) {
