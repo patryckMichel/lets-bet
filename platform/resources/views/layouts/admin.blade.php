@@ -121,6 +121,14 @@
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link {{ request()->routeIs('admin.system-update.*') ? 'active' : '' }}" href="{{ route('admin.system-update.index') }}">
+                <div class="d-flex align-items-center">
+                  <span class="nav-link-icon"><span data-feather="download-cloud"></span></span>
+                  <span class="nav-link-text">Atualização</span>
+                </div>
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link {{ request()->routeIs('admin.logs.*') ? 'active' : '' }}" href="{{ route('admin.logs.index') }}">
                 <div class="d-flex align-items-center">
                   <span class="nav-link-icon"><span data-feather="file-text"></span></span>

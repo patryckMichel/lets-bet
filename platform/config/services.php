@@ -55,4 +55,15 @@ return [
         'base_url' => env('ASAAS_BASE_URL'),
     ],
 
+    'github' => [
+        'repo' => env('GITHUB_REPO', 'patryckMichel/lets-bet'),
+        'branch' => env('GITHUB_BRANCH', 'main'),
+        'token' => env('GITHUB_TOKEN'),
+        'version_path' => env('GITHUB_VERSION_PATH', 'platform/VERSION'),
+    ],
+
+    'update' => [
+        'script_path' => env('UPDATE_SCRIPT_PATH', '/usr/local/bin/lestbet-update.sh'),
+    ],
+
 ];

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\GameAdminController;
 use App\Http\Controllers\Admin\LogAdminController;
 use App\Http\Controllers\Admin\PlayerAdminController;
 use App\Http\Controllers\Admin\SettingAdminController;
+use App\Http\Controllers\Admin\SystemUpdateAdminController;
 use App\Http\Controllers\Admin\WithdrawalAdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +50,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/configuracoes', [SettingAdminController::class, 'edit'])->name('settings.edit');
     Route::put('/configuracoes', [SettingAdminController::class, 'update'])->name('settings.update');
+
+    Route::get('/atualizacao', [SystemUpdateAdminController::class, 'index'])->name('system-update.index');
+    Route::post('/atualizacao', [SystemUpdateAdminController::class, 'update'])->name('system-update.run');
 
     Route::get('/logs', [LogAdminController::class, 'index'])->name('logs.index');
 });

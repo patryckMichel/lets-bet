@@ -9,6 +9,7 @@ use App\Models\Deposit;
 use App\Models\User;
 use App\Models\Withdrawal;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -166,6 +167,7 @@ class AffiliateCommissionService
             $items->push($created);
         }
 
+        $items = new EloquentCollection($items->all());
         $items->load(['deposit.user']);
 
         return [
